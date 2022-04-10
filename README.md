@@ -1,0 +1,2 @@
+# Appazoid
+C++ GUI Library
