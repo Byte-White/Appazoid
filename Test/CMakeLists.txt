@@ -9,4 +9,6 @@ target_link_libraries(
     ${PROJECT_NAME}
     appazoid::appazoid
 )
+
+
 # TODO: Add tests and install targets if needed.

@@ -1,5 +1,6 @@
 #pragma once
 
+
 namespace az {
 
 	//static LPCTSTR windows_title = _T("My App");

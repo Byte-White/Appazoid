@@ -17,8 +17,7 @@ public:
 	}
 	void Run() override
 	{
-		std::cout << "Test\n";
-		while (1);
+
 	}
 };
 
