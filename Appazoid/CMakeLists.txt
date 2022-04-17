@@ -10,6 +10,7 @@ STATIC
 src/ApplicationInterface/Application.cpp
 src/ApplicationInterface/Application.h
 include/Appazoid/Appazoid.h
+include/Appazoid/UI/widget.h
 )
 
 #Appazoid Add Include Directories
