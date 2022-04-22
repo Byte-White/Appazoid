@@ -4,6 +4,7 @@
 [submodule "Appazoid/vendor/imgui"]
 	path = Appazoid/vendor/imgui
 	url = https://github.com/FunhuninjaStudio/imgui
+	branch = docking
 [submodule "Appazoid/vendor/-b"]
 	path = Appazoid/vendor/-b
 	url = https://github.com/FunhuninjaStudio/imgui
