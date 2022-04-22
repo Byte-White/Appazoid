@@ -43,8 +43,8 @@ target_link_libraries(
     glfw
     PUBLIC
     glad::glad
-    PUBLIC
-    glm::glm
+    #PUBLIC
+    #glm::glm
     PUBLIC 
     stb_image::stb_image
 )

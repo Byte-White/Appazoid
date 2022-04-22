@@ -1,0 +1,15 @@
+[submodule "Appazoid/vendor/asdf/glfw"]
+	path = Appazoid/vendor/asdf/glfw
+	url = https://github.com/FunhuninjaStudio/glfw
+[submodule "Appazoid/vendor/imgui"]
+	path = Appazoid/vendor/imgui
+	url = https://github.com/FunhuninjaStudio/imgui
+[submodule "Appazoid/vendor/-b"]
+	path = Appazoid/vendor/-b
+	url = https://github.com/FunhuninjaStudio/imgui
+[submodule "Appazoid/vendor/glfw"]
+	path = Appazoid/vendor/glfw
+	url = https://github.com/FunhuninjaStudio/glfw
+[submodule "Appazoid/vendor/glm"]
+	path = Appazoid/vendor/glm
+	url = https://github.com/Groovounet/glm

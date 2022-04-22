@@ -38,7 +38,7 @@ public:
 	{
 		ImGui::Begin(m_folder_path.c_str());
 		//for()
-		ImGui::Button("TODO: make a content browser");
+		ImGui::Button("TODO: make a content browser.");
 		ImGui::End();
 	}
 private:
