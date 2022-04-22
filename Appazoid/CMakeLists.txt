@@ -7,10 +7,22 @@ project(Appazoid)
 add_library(
 ${PROJECT_NAME}
 STATIC
-src/ApplicationInterface/Application.cpp
-src/ApplicationInterface/Application.h
-include/Appazoid/Appazoid.h
-include/Appazoid/UI/widget.h
+  "src/ApplicationInterface/Application.cpp"
+  "src/ApplicationInterface/Application.h"
+
+  #opengl stuff
+  #"src/OpenGL/IndexBuffer.cpp"
+  #"src/OpenGL/Renderer.cpp"
+  #"src/OpenGL/Shader.cpp"
+  #"src/OpenGL/Texture.cpp"
+  #"src/OpenGL/VertexArray.cpp"
+  #"src/OpenGL/VertexBuffer.cpp"
+
+  "include/Appazoid/Appazoid.h"
+  "include/Appazoid/UI/widget.h"
+ 
+  "vendor/stb_image/stb_image.h"
+  "vendor/stb_image/stb_image.cpp"
 )
 
 #Appazoid Add Include Directories
@@ -31,6 +43,10 @@ target_link_libraries(
     glfw
     PUBLIC
     glad::glad
+    PUBLIC
+    glm::glm
+    PUBLIC 
+    stb_image::stb_image
 )
 
 #find_package(imgui CONFIG REQUIRED)

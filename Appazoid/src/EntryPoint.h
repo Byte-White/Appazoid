@@ -39,7 +39,7 @@ namespace az
         {
 
             // Create a GLFWwindow object of 800 by 800 pixels, naming it "YoutubeOpenGL"
-            window = glfwCreateWindow(app->window_style.width, app->window_style.height, app->window_style.title, NULL, NULL);
+            window = glfwCreateWindow(app->window_style.width, app->window_style.height, app->window_style.title.c_str(), NULL, NULL);
             // Error check if the window fails to create
             if (window == NULL)
             {
@@ -67,7 +67,20 @@ namespace az
             //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
             io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
             io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
-            ImGui::StyleColorsDark();
+            
+            switch (app->window_style.stylecolor)
+            {
+            case Application::WindowStyle::StyleColorDark:
+                ImGui::StyleColorsDark();
+                break;
+            case Application::WindowStyle::StyleColorLight:
+                ImGui::StyleColorsLight();
+                break;
+            case Application::WindowStyle::StyleColorClassic:
+                ImGui::StyleColorsClassic();
+                break;
+            }
+            
             ImGui_ImplGlfw_InitForOpenGL(window, true);
             ImGui_ImplOpenGL3_Init("#version 330");
         }
@@ -86,10 +99,46 @@ namespace az
                 ImGui_ImplGlfw_NewFrame();
                 ImGui::NewFrame();
 
+
+                static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+                // ImGuiWindowFlags_NoDocking flag is used to make the parent window not dockable ,
+                // because it would be confusing to have two docking targets within each others.
+                ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+                if (app->m_MenubarCallback)
+                    window_flags |= ImGuiWindowFlags_MenuBar;
+
+                const ImGuiViewport* viewport = ImGui::GetMainViewport();
+                ImGui::SetNextWindowPos(viewport->WorkPos);
+                ImGui::SetNextWindowSize(viewport->WorkSize);
+                ImGui::SetNextWindowViewport(viewport->ID);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+                window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+
+                // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render the background
+                // and handle the pass-thru hole, so we ask Begin() to not render a background.
+                if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+                    window_flags |= ImGuiWindowFlags_NoBackground;
+
+
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+                ImGui::Begin((app->window_style.title + " DockSpace").c_str(), nullptr, window_flags);
+                ImGui::PopStyleVar();
+
+                ImGui::PopStyleVar(2);
+
+                if (io->ConfigFlags & ImGuiConfigFlags_DockingEnable)
+                {
+                    ImGuiID dockspace_id = ImGui::GetID((app->window_style.title + "DockSpace").c_str());
+                    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+                }
                 //Entry Point
                 app->Run();
                 //Entry Point
 
+                ImGui::End();
                 // Renders the ImGUI elements
                 ImGui::Render();
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

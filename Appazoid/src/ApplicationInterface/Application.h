@@ -16,14 +16,18 @@ namespace az {
 	class Application
 	{
 	private:
-		int widget_naming_count;// helps to make a default name (example: widget_123)
+		int widget_naming_count=0;// helps to make a default name (example: widget_123)
 	public:
 		bool done;
 		float clear_color[4] = { 0.8f, 0.3f, 0.02f, 1.0f };
 		struct WindowStyle
 		{
 			int width, height;
-			const char* title;
+			std::string title;
+			enum StyleColor
+			{
+				StyleColorDark=0, StyleColorLight, StyleColorClassic
+			}stylecolor = StyleColorDark;
 		};
 		const WindowStyle window_style;
 	public:
@@ -45,13 +49,24 @@ namespace az {
 		template<typename T, typename ...T_args>
 		inline void AddWidget(std::string widget_name,T_args&... args)
 		{
+			if (widget_name == "")widget_name = "widget_"+widget_naming_count;
 			static_assert(std::is_base_of<Widget, T>::value, "Added type should be a subclass of az::Widget");
 			this->m_widgets[widget_name]=(std::make_shared<T>(args...));
 			//->OnConstruction();
 		}
 
+
+		inline std::unordered_map<std::string, std::shared_ptr<Widget>>& GetWidgetList()
+		{
+			return m_widgets;
+		}
+
+		inline void AddMenubarCallback(std::function<void()> function) { m_MenubarCallback = function; }
+		inline void Close() { done = true; }
 		void HideWidget(std::string widget_name);
 		//std::vector<std::string> GetWidgetsNames();
+	public:
+		std::function<void()> m_MenubarCallback;//menubar callback function pointer
 	private:
 		//std::vector<std::shared_ptr<Widget>> m_widgets;
 		std::unordered_map<std::string,std::shared_ptr<Widget>> m_widgets;//hash map(name:widget)

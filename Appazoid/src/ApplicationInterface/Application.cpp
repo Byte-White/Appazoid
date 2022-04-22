@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "imgui.h"
 namespace az {
 	
 	Application::~Application()
@@ -13,6 +14,15 @@ namespace az {
 
 	void Application::Run()
 	{
+		//menubar
+		if (m_MenubarCallback)
+		{
+			if (ImGui::BeginMenuBar())
+			{
+				m_MenubarCallback();
+				ImGui::EndMenuBar();
+			}
+		}
 		//render each widget
 		for (auto& widget : m_widgets)
 		{
