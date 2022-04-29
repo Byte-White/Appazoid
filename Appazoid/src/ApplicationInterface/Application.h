@@ -1,5 +1,6 @@
 #pragma once
-
+//#ifndef APPAZOID_APPLICATION_H
+//#define APPAZOID_APPLICATION_H
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -7,11 +8,33 @@
 
 #include "Appazoid/UI/Widget.h"
 
+#include "imgui.h"
+#ifndef BACKENDS
+#define BACKENDS
+#include "backends/imgui_impl_opengl3.h"
+#endif 
+#include "backends/imgui_impl_glfw.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h> 
+
+
+
+
 namespace az {
+
+	inline void EnableConfigFlag(ImGuiIO& io, ImGuiConfigFlags_ flag)		{ io.ConfigFlags |= flag;	}
+	inline void DisableConfigFlag(ImGuiIO& io, ImGuiConfigFlags_ flag)		{ io.ConfigFlags &= ~flag;	}
+
+	inline void EnableWindowFlag(ImGuiWindowFlags&  wf, ImGuiWindowFlags_ flag)			{ wf |= flag;	}
+	inline void DisableWindowFlag(ImGuiWindowFlags& wf, ImGuiWindowFlags_ flag)			{ wf &= ~flag;	}
 
 	//static LPCTSTR windows_title = _T("My App");
 	//static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	namespace entrypoint { void Main(int argc, char** argv); }
+	namespace entrypoint
+	{ 
+		extern GLFWwindow* window;
+		extern ImGuiIO* io;
+	}
 
 	class Application
 	{
@@ -55,22 +78,43 @@ namespace az {
 			//->OnConstruction();
 		}
 
-
 		inline std::unordered_map<std::string, std::shared_ptr<Widget>>& GetWidgetList()
 		{
 			return m_widgets;
 		}
 
 		inline void AddMenubarCallback(std::function<void()> function) { m_MenubarCallback = function; }
+		inline void AddConfigFlagCallback(std::function<void(ImGuiIO& io)> function) { m_ConfigFlagsCallback=function; }
 		inline void Close() { done = true; }
 		void HideWidget(std::string widget_name);
+		void ShowWidget(std::string widget_name);
 		//std::vector<std::string> GetWidgetsNames();
 	public:
 		std::function<void()> m_MenubarCallback;//menubar callback function pointer
+		std::function<void(ImGuiIO&)> m_ConfigFlagsCallback;
 	private:
 		//std::vector<std::shared_ptr<Widget>> m_widgets;
 		std::unordered_map<std::string,std::shared_ptr<Widget>> m_widgets;//hash map(name:widget)
 	};
 	//To be defined in CLIENT
 	Application* CreateApplication(int,char**);
+
+
+    namespace entrypoint
+    {
+		extern Application* app;
+		/// Some Variables are defined in the beginning of
+		/// The main namespace
+		void init_glfw();
+		int create_window();
+		void init_imgui();
+        void Main(int argc, char** argv);
+        void cleanup();
+    }
+
 }
+//MACROS FOR FLAG CONFIGURING (backup)
+//#define ENABLE_CONFIG_FLAGS	(_io,_flag)		_io->ConfigFlags |=	_flag
+//#define DISABLE_CONFIG_FLAGS(_io,_flag)		_io->ConfigFlags &= ^_flag
+
+//#endif

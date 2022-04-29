@@ -20,10 +20,12 @@ STATIC
 
   "include/Appazoid/Appazoid.h"
   "include/Appazoid/UI/widget.h"
+  "include/Appazoid/UI/Texture.h"
+  
  
   "vendor/stb_image/stb_image.h"
   "vendor/stb_image/stb_image.cpp"
-)
+  )
 
 #Appazoid Add Include Directories
 target_include_directories( 

@@ -1,6 +1,5 @@
 ﻿// Appazoid.cpp : Defines the entry point for the application.
 //
-
 #include "Appazoid/Appazoid.h"
 //#include <filesystem>
 
@@ -18,6 +17,7 @@ public:
 	{
 		ImGui::Begin(name.c_str());
 		ImGui::Text("Appazoid Test Project");
+
 		ImGui::End();
 	}
 private:
@@ -39,6 +39,14 @@ public:
 		ImGui::Begin(m_folder_path.c_str());
 		//for()
 		ImGui::Button("TODO: make a content browser.");
+
+
+		az::Texture t("D:/Files/logo.jpg");
+		static int sz[2] = {t.GetWidth(),t.GetHeight()};
+		ImGui::SliderInt2("size:",sz,24,1024);
+
+		ImGui::Image((void*)(t.GetTextureID()), {(float)sz[0],(float)sz[1]});
+
 		ImGui::End();
 	}
 private:
@@ -46,6 +54,11 @@ private:
 };
 
 
+void ConfigFlags(ImGuiIO& io)
+{
+	az::EnableConfigFlag(io,ImGuiConfigFlags_DockingEnable);
+	az::EnableConfigFlag(io,ImGuiConfigFlags_NavEnableKeyboard);
+}
 
 az::Application* az::CreateApplication(int argc,char**argv)
 {
@@ -55,6 +68,7 @@ az::Application* az::CreateApplication(int argc,char**argv)
 	style.title  = "Appazoid Application";
 	style.stylecolor = style.StyleColorDark;
 	Application* app = new Application(style);
+	app->AddConfigFlagCallback(ConfigFlags);
 	app->AddMenubarCallback([app]()
 		{
 			if (ImGui::BeginMenu("File"))
@@ -66,7 +80,7 @@ az::Application* az::CreateApplication(int argc,char**argv)
 	);
 	app->AddWidget<MainWidget>("first_widget", "my window");
 	app->AddWidget<MainWidget>("second_widget", "not my window");
-	app->AddWidget<ContentBrowser>("content_browser","D:/Files/random");
+	app->AddWidget<ContentBrowser>("content_browser","D:/Files/");
 	for (auto& i : app->GetWidgetList())
 	{
 		std::cout << i.first << " ";
