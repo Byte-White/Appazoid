@@ -1,6 +1,6 @@
 # Appazoid
 C++ GUI Library
-
+![image](https://user-images.githubusercontent.com/51212450/166066016-54110855-11bc-4f02-9253-044e80d2c3c0.png)
 ######
 ## How to use:
 
