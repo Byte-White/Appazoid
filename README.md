@@ -19,7 +19,7 @@ target_link_libraries(${PROJECT_NAME} appazoid::appazoid)
 ```C++
 #include "Appazoid/Appazoid.h"
 
-class MainWidget: public az::Widget // Create A Widget SubClass
+class MainWidget : public az::Widget // Create A Widget SubClass
 {
 	std::string name;
 public:
@@ -39,13 +39,13 @@ private:
 
 };
 
-az::Application* az::CreateApplication(int argc,char**argv)
+az::Application* az::CreateApplication(int argc, char** argv)
 {
 	Application::WindowStyle style; // Create A Window Style
-	style.width  = 800;
+	style.width = 800;
 	style.height = 400;
-	style.title  = "Appazoid Application";
-	style.stylecolor = style.StyleColorDark;
+	style.title = "Appazoid Application";
+	style.stylecolor = az::StyleColor::StyleColorDark;
 	Application* app = new Application(style); // Create a window
 	app->AddMenubarCallback([app]() // Create a menu
 		{
@@ -58,7 +58,7 @@ az::Application* az::CreateApplication(int argc,char**argv)
 	);
 	app->AddWidget<MainWidget>("first_widget", "my window"); // Add a widget
 	app->AddWidget<MainWidget>("second_widget", "not my window"); // Add a widget
-  
+
   // Print all widgets
 	for (auto& i : app->GetWidgetList())
 	{
