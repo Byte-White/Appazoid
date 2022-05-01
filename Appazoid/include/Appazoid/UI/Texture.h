@@ -41,7 +41,7 @@ namespace az
 		}
 		~Texture()
 		{
-			//glDeleteTextures(1, &m_RendererID);//THIS WILL DELETE THE TEXTURE BEFORE SHOWING IT!
+			glDeleteTextures(1, &m_RendererID);//THIS WILL DELETE THE TEXTURE BEFORE SHOWING IT IF ITS DEFINED IN OnRender()!
 		}
 
 		void Bind(unsigned int slot = 0) const

@@ -14,3 +14,6 @@
 [submodule "Appazoid/vendor/glm"]
 	path = Appazoid/vendor/glm
 	url = https://github.com/Groovounet/glm
+[submodule "Appazoid/vendor/spdlog"]
+	path = Appazoid/vendor/spdlog
+	url = https://github.com/gabime/spdlog
