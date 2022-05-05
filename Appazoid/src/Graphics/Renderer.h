@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Core/AppazoidSpecification.h"
 #include "VertexArray.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"

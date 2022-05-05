@@ -6,6 +6,8 @@
 #include <memory>
 #include <functional>
 
+#include "Core/AppazoidSpecification.h"
+
 #include "Appazoid/UI/Widget.h"
 
 #include "imgui.h"
@@ -17,7 +19,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h> 
 
-#include "Appazoid/UI/Texture.h"
+#include "Appazoid/UI/Image.h"
 
 #include "Graphics/IndexBuffer.h"
 #include "Graphics/Renderer.h"
@@ -56,7 +58,7 @@ namespace az {
 	public:
 		Renderer renderer;
 		bool done;
-		float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
+		glm::vec4 clear_color = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };//float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		struct WindowStyle
 		{
 			int width, height;
@@ -142,10 +144,11 @@ namespace az {
 		template<typename T, typename ...T_args>
 		inline void AddWidget(std::string widget_name,T_args&... args)
 		{
-			if (widget_name == "")widget_name = "widget_"+widget_naming_count;
+			if (widget_name == "") {widget_name += "widget_"+ std::to_string(widget_naming_count++);}//widget default naming
 			static_assert(std::is_base_of<Widget, T>::value, "Added type should be a subclass of az::Widget");
 			this->m_widgets[widget_name]=(std::make_shared<T>(args...));
-			//->OnConstruction();
+			//this->m_widgets[widget_name]->OnConstruction();
+			//TODO: dobavi izvikvane na ->OnConstruction();
 		}
 
 		inline std::unordered_map<std::string, std::shared_ptr<Widget>>& GetWidgetList()
@@ -176,6 +179,7 @@ namespace az {
 		/// Some Variables are defined in the beginning of
 		/// The main namespace
 		void init_glfw();
+		void init_glad();
 		int create_window();
 		void init_imgui();
         void Main(int argc, char** argv);

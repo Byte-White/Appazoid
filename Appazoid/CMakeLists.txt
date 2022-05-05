@@ -6,7 +6,7 @@ project(Appazoid)
 
 add_library(
 ${PROJECT_NAME}
-STATIC
+  STATIC
   #src stuff
   "src/ApplicationInterface/Application.cpp"
   "src/ApplicationInterface/Application.h"
@@ -22,13 +22,13 @@ STATIC
   #Include folder Stuff
   "include/Appazoid/Appazoid.h"
   "include/Appazoid/UI/widget.h"
-  "include/Appazoid/UI/Texture.h"
+  "include/Appazoid/UI/Image.h"
   
   #STB IMAGE
   "vendor/stb_image/stb_image.h"
   "vendor/stb_image/stb_image.cpp"
 
-)
+ "src/Graphics/Texture.h" "src/Graphics/Texture.cpp" "src/Core/AppazoidSpecification.h")
 
 #Appazoid Add Include Directories
 target_include_directories( 

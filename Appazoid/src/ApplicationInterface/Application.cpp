@@ -154,7 +154,6 @@ namespace az
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         }
-
         //Error Message Callback
         void GLAPIENTRY
             MessageCallback(GLenum source,
@@ -173,26 +172,33 @@ namespace az
             //    type, severity, message);
         }
 
-        int create_window()
+        void init_glad()
         {
-
-            // Create a GLFWwindow object
-            window = glfwCreateWindow(app->window_style.width, app->window_style.height, app->window_style.title.c_str(), NULL, NULL);
-            // Error check if the window fails to create
-            if (window == NULL)
-            {
-                std::cout << "Failed to create GLFW window" << std::endl;
-                glfwTerminate();
-                return -1;
-            }
-            // Introduce the window into the current context
-            glfwMakeContextCurrent(window);
-
+            APPAZOID_CORE_INFO("(GLAD)Loading OpenGL...");
             //Load GLAD so it configures OpenGL
             gladLoadGL();
             //Enable OpenGL Error Message Callback
             glEnable(GL_DEBUG_OUTPUT);
             glDebugMessageCallback(MessageCallback, nullptr);
+        }
+
+
+
+        int create_window()
+        {
+            // Create a GLFWwindow object
+            window = glfwCreateWindow(app->window_style.width, app->window_style.height, app->window_style.title.c_str(), NULL, NULL);
+            // Error check if the window fails to create
+            if (window == NULL)
+            {
+                APPAZOID_CORE_ERROR("Failed to create GLFW window");
+                //std::cout << "Failed to create GLFW window" << std::endl;
+                glfwTerminate();
+                return -1;
+            }
+            // Introduce the window into the current context
+            glfwMakeContextCurrent(window);
+            init_glad();
             // Specify the viewport of OpenGL in the Window
             // In this case the viewport goes from x = 0, y = 0, to x = width, y = height
             glViewport(0, 0, app->window_style.width, app->window_style.height);
@@ -236,11 +242,15 @@ namespace az
         }
         void Main(int argc, char** argv)
         {
+            for (auto widget : app->GetWidgetList())
+            {
+                widget.second->OnConstruction();
+            }
             // Main while loop
             while (!glfwWindowShouldClose(window) && (!app->done))
             {
                 // Specify the color of the background
-                glClearColor(app->clear_color[0], app->clear_color[1], app->clear_color[2], app->clear_color[3]);
+                glClearColor(app->clear_color.r, app->clear_color.g, app->clear_color.b, app->clear_color.a);
                 // Clean the back buffer and assign the new color to it
                 app->renderer.Clear();//glClear(GL_COLOR_BUFFER_BIT);
 
@@ -295,6 +305,10 @@ namespace az
                 ImGui::End();
                 // Renders the ImGUI elements
                 ImGui::Render();
+                for (auto widget : app->GetWidgetList())
+                {
+                    widget.second->OnImGuiRender();
+                }
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                 
                 // Swap the back buffer with the front buffer
@@ -313,6 +327,11 @@ namespace az
         }
         void cleanup()
         {
+            // Calls the "Destructor"(When Cleaning up)
+            for (auto widget : app->GetWidgetList())
+            {
+                widget.second->OnDestruction();
+            }
             // Deletes all ImGUI instances
             ImGui_ImplOpenGL3_Shutdown();
             ImGui_ImplGlfw_Shutdown();

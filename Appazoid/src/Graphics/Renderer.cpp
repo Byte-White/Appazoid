@@ -14,7 +14,8 @@ namespace az
 	}
 
 	bool GLLogCall(const char* function, const char* file, int line) {
-		while (GLenum error = glGetError()) {
+		while (GLenum error = glGetError()) 
+		{
 			std::cout << "[OpenGL Error] (" << error << ") " << function << " " << file << " " << line << std::endl;//TODO: Add With SPDLOG
 			return false;
 		}

@@ -26,11 +26,9 @@ namespace az
 #define APPAZOID_CORE_INFO(...)     ::az::Log::GetCoreLogger()->info(__VA_ARGS__)
 #define APPAZOID_CORE_WARN(...)     ::az::Log::GetCoreLogger()->warn(__VA_ARGS__)
 #define APPAZOID_CORE_ERROR(...)    ::az::Log::GetCoreLogger()->error(__VA_ARGS__)
-#define APPAZOID_CORE_FATAL(...)    ::az::Log::GetCoreLogger()->fatal(__VA_ARGS__)
 
 // Client log macros
 #define APPAZOID_TRACE(...)	      ::az::Log::GetClientLogger()->trace(__VA_ARGS__)
 #define APPAZOID_INFO(...)	      ::az::Log::GetClientLogger()->info(__VA_ARGS__)
 #define APPAZOID_WARN(...)	      ::az::Log::GetClientLogger()->warn(__VA_ARGS__)
 #define APPAZOID_ERROR(...)	      ::az::Log::GetClientLogger()->error(__VA_ARGS__)
-#define APPAZOID_FATAL(...)		  ::az::Log::GetClientLogger()->fatal(__VA_ARGS__)
