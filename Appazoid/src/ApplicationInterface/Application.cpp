@@ -126,12 +126,6 @@ namespace az
             io.FontGlobalScale = app->window_style.FontGlobalScale;
         }
 
-        //useless function
-        static void Bounce(float& colour, float& increment)
-        {
-            if (colour > 1.0f || colour < 0.0f)
-                increment = -increment;
-        }
         GLFWwindow* window;
         Application* app;
         ImGuiIO* io;
@@ -187,7 +181,9 @@ namespace az
         int create_window()
         {
             // Create a GLFWwindow object
-            window = glfwCreateWindow(app->window_style.width, app->window_style.height, app->window_style.title.c_str(), NULL, NULL);
+            window = glfwCreateWindow(app->window_style.width, app->window_style.height, app->window_style.title.c_str(), 
+                app->window_style.monitor,//WINDOW OR FULLSCREEN MODE
+                NULL);
             // Error check if the window fails to create
             if (window == NULL)
             {
@@ -305,11 +301,11 @@ namespace az
                 ImGui::End();
                 // Renders the ImGUI elements
                 ImGui::Render();
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                 for (auto widget : app->GetWidgetList())
                 {
                     widget.second->OnImGuiRender();
                 }
-                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
                 
                 // Swap the back buffer with the front buffer
                 glfwSwapBuffers(window);

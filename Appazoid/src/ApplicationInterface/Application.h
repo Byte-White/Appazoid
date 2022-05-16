@@ -31,15 +31,22 @@
 
 
 
-
 namespace az {
 
+	//Config Helper Functions
 	inline void EnableConfigFlag(ImGuiIO& io, ImGuiConfigFlags_ flag)		{ io.ConfigFlags |= flag;	}
 	inline void DisableConfigFlag(ImGuiIO& io, ImGuiConfigFlags_ flag)		{ io.ConfigFlags &= ~flag;	}
 
 	inline void EnableWindowFlag(ImGuiWindowFlags&  wf, ImGuiWindowFlags_ flag)			{ wf |= flag;	}
 	inline void DisableWindowFlag(ImGuiWindowFlags& wf, ImGuiWindowFlags_ flag)			{ wf &= ~flag;	}
 
+	//MONITOR RESOLUTION
+	inline glm::ivec2 GetMonitorResolution() 
+	{ return glm::ivec2{ glfwGetVideoMode(glfwGetPrimaryMonitor())->width,glfwGetVideoMode(glfwGetPrimaryMonitor())->height }; }
+	
+	inline int GetMonitorWidth()	{ return GetMonitorResolution().x; }
+	inline int GetMonitorHeight()	{ return GetMonitorResolution().y; }
+	
 	//static LPCTSTR windows_title = _T("My App");
 	//static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	namespace entrypoint
@@ -61,9 +68,53 @@ namespace az {
 		glm::vec4 clear_color = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };//float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 		struct WindowStyle
 		{
-			int width, height;
+		private:
+			//Copy
+			void Copy(const WindowStyle& ws)
+			{
+				this->stylecolor = ws.stylecolor;
+				this->colors = ws.colors;
+				this->FontGlobalScale = ws.FontGlobalScale;
+				this->size = ws.size;
+				this->title = ws.title;
+				this->monitor = glfwGetPrimaryMonitor();
+			}
+		public:
+			WindowStyle(int w, int h , std::string window_title = "Appazoid Application")
+				:width(w),height(h),title(window_title)
+			{}
+
+			WindowStyle(glm::ivec2 sz, std::string window_title = "Appazoid Application")
+				:size(sz), title(window_title)
+			{}
+			
+			WindowStyle() 
+			{}
+
+			WindowStyle(const WindowStyle& ws)
+			{
+				Copy(ws);
+			}
+
+			void operator=(const WindowStyle& ws)
+			{
+				Copy(ws);
+			}
+
+			union
+			{
+				struct
+				{
+					int width, height;
+				};
+				glm::ivec2 size;
+			};
 			std::string title;
 			StyleColor stylecolor = StyleColor::CustomStyleColors;
+			
+			//bool fullscreen = false;  //not needed
+			GLFWmonitor* monitor = NULL;//Used to select monitor for fullscreen
+
 			struct
 			{
 				glm::vec3 Text = glm::vec3{ 1,1,1 };
@@ -124,11 +175,11 @@ namespace az {
 			}colors;
 			float FontGlobalScale = 1.f;
 		};
-		const WindowStyle window_style;
+		WindowStyle window_style;//was const
 	public:
-		Application(const WindowStyle& style = {255,255,"Appazoid Application"})
+		Application(WindowStyle& style = WindowStyle(255, 255, "Appazoid Application"))
 			:window_style(style),done(false)
-		{};
+		{}
 		~Application();
 		void Run();
 		/* AddWidget worse function(backup)
