@@ -13,10 +13,12 @@ class MainWidget : public az::Widget
 {
 	std::string name;
 	std::unique_ptr<az::Image> img;
+	//std::unique_ptr<az::WindowHandler> win;
 public:
 	MainWidget(const std::string& name)
 		:name(name)
 	{
+		//win = std::make_unique<az::WindowHandler>(az::WindowStyle(555, 555));
 	}
 
 	void OnConstruction() override
@@ -35,6 +37,8 @@ public:
 		ImGui::Text("Appazoid Test Project");
 		ImGui::Text("Framerate: %.2f", ImGui::GetIO().Framerate);
 		ImGui::End();
+
+		//win->SwapBuffers();
 	}
 private:
 
@@ -90,7 +94,7 @@ void ConfigFlags(ImGuiIO& io)
 az::Application* az::CreateApplication(int argc, char** argv)
 {
 
-	Application::WindowStyle style;
+	az::WindowStyle style;
 	style.size = GetMonitorResolution();
 	style.monitor = glfwGetPrimaryMonitor();
 	style.title = "Appazoid Application";

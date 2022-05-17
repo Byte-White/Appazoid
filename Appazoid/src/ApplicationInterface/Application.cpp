@@ -180,10 +180,9 @@ namespace az
 
         int create_window()
         {
-            // Create a GLFWwindow object
-            window = glfwCreateWindow(app->window_style.width, app->window_style.height, app->window_style.title.c_str(), 
-                app->window_style.monitor,//WINDOW OR FULLSCREEN MODE
-                NULL);
+            // Create a window with WindowHandler
+            app->window_handler = std::make_unique<WindowHandler>(app->window_style);
+            window = app->window_handler->GetGLFWWindow();
             // Error check if the window fails to create
             if (window == NULL)
             {
@@ -308,7 +307,7 @@ namespace az
                 }
                 
                 // Swap the back buffer with the front buffer
-                glfwSwapBuffers(window);
+                app->window_handler->SwapBuffers();
                 // Take care of all GLFW events
                 glfwPollEvents();
                 // Update and Render additional Platform Windows
@@ -334,7 +333,7 @@ namespace az
             ImGui::DestroyContext();
 
             // Delete window before ending the program
-            glfwDestroyWindow(window);
+            app->window_handler->DestroyWindow();
             // Terminate GLFW before ending the program
             glfwTerminate();
 

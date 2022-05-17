@@ -28,7 +28,11 @@ ${PROJECT_NAME}
   "vendor/stb_image/stb_image.h"
   "vendor/stb_image/stb_image.cpp"
 
- "src/Graphics/Texture.h" "src/Graphics/Texture.cpp" "src/Core/AppazoidSpecification.h")
+ "src/Graphics/Texture.h" "src/Graphics/Texture.cpp" 
+ "src/Core/AppazoidSpecification.h"
+ "src/ApplicationInterface/Window/WindowHandler.h"
+ "src/ApplicationInterface/Window/WindowHandler.cpp"
+ "src/ApplicationInterface/Window/WindowStyle.h")
 
 #Appazoid Add Include Directories
 target_include_directories( 
