@@ -2,7 +2,6 @@
 
 #include "imgui.h"
 
-
 namespace az
 {
 
@@ -14,9 +13,13 @@ namespace az
 		bool visible = true;
 		virtual ~Widget() = default;
 		
+		//On Rendering Widgets
 		virtual void OnRender(){}
-		virtual void OnConstruction(){}
-		virtual void OnDestruction(){}
+		//On Rendering ImGui Frame
+		virtual void OnImGuiRender(){}
+		
+		virtual void OnConstruction()	{}
+		virtual void OnDestruction()	{}
 		/*virtual void SetFlags()
 		{
 			//To Disable Docking:

@@ -3,7 +3,9 @@
 #
 project(Sandbox)
 # Add source to this project's executable.
-add_executable (${PROJECT_NAME} main.cpp)
+add_executable (${PROJECT_NAME} 
+"main.cpp"
+)
 
 target_link_libraries(
     ${PROJECT_NAME}
