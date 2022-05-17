@@ -6,6 +6,7 @@ extern az::Application* az::CreateApplication(int,char**);
 #include <stdio.h>
 #include <iostream>
 #include "Logging/Log.h"
+#include "MemoryManagment/MemoryTracker.h"
 
 
 #ifndef AZ_CUSTOM_MAIN // Define to make a custom main function

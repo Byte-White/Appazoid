@@ -23,7 +23,7 @@ namespace az
 	{
 		glfwDestroyWindow(window);
 		window_is_destroyed = true;
-		APPAZOID_WARN("Window {0} DESTROYED!",style.title);
+		//APPAZOID_WARN("Window {0} DESTROYED!",style.title);
 		
 	}
 

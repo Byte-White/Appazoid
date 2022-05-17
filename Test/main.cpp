@@ -4,7 +4,7 @@
 #include "Core/AppazoidSpecification.h"
 //#include <filesystem>
 
-/// INCLUDECUSTOM WIDGETS
+/// INCLUDE CUSTOM WIDGETS
 #include"widgets/FrameBufferWidget.h"
 ///
 
@@ -115,6 +115,7 @@ az::Application* az::CreateApplication(int argc, char** argv)
 	app->AddWidget<ContentBrowser>("content_browser","D:/Files/");
 	//app->AddWidget<MFrameBuffer>("framebuffer_widget", "FrameBuffer");//TODO: Fix The Errors
 	az::AppazoidSpecification::Print();
+	az::MemoryTracker::Print();
 	for (auto& i : app->GetWidgetList())
 	{
 		std::cout << i.first << " ";

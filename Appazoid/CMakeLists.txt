@@ -32,7 +32,7 @@ ${PROJECT_NAME}
  "src/Core/AppazoidSpecification.h"
  "src/ApplicationInterface/Window/WindowHandler.h"
  "src/ApplicationInterface/Window/WindowHandler.cpp"
- "src/ApplicationInterface/Window/WindowStyle.h")
+ "src/ApplicationInterface/Window/WindowStyle.h" "src/MemoryManagment/MemoryTracker.h")
 
 #Appazoid Add Include Directories
 target_include_directories( 
