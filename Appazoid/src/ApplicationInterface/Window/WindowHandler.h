@@ -13,7 +13,7 @@ namespace az
 		~WindowHandler();
 		inline GLFWwindow* GetGLFWWindow() { return window; }
 		inline WindowStyle& GetWindowStyle() { return style; }
-		void SwapBuffers(); 
+		void SwapBuffers();
 		void DestroyWindow();
 	private:
 		GLFWwindow* window;

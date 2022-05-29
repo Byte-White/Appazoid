@@ -8,7 +8,7 @@
 
 #include "Core/AppazoidSpecification.h"
 
-#include "Appazoid/UI/Widget.h"
+#include "Appazoid/UI/Layer.h"
 
 #include "imgui.h"
 #ifndef AZ_IMGUI_BACKENDS
@@ -33,6 +33,8 @@
 #include "Graphics/VertexBufferLayout.h"
 #include "Graphics/FrameBuffer.h"
 
+#include "Core/Input.h"
+#include "Core/LayerStack.h"
 
 
 namespace az {
@@ -43,6 +45,10 @@ namespace az {
 
 	inline void EnableWindowFlag(ImGuiWindowFlags&  wf, ImGuiWindowFlags_ flag)			{ wf |= flag;	}
 	inline void DisableWindowFlag(ImGuiWindowFlags& wf, ImGuiWindowFlags_ flag)			{ wf &= ~flag;	}
+
+	//MACROS FOR FLAG CONFIGURING (backup)
+	//#define ENABLE_CONFIG_FLAGS	(_io,_flag)		_io->ConfigFlags |=	_flag
+	//#define DISABLE_CONFIG_FLAGS(_io,_flag)		_io->ConfigFlags &= ^_flag
 
 	//MONITOR RESOLUTION
 	inline glm::ivec2 GetMonitorResolution() 
@@ -62,7 +68,8 @@ namespace az {
 	class Application
 	{
 	private:
-		int widget_naming_count=0;// helps to make a default name (example: widget_123)
+		int layer_naming_count	=0;// helps to make a default name (example: layer_123)
+		int overlay_naming_count=0;// helps to make a default name (example: overlay_123)
 	public:
 		Renderer renderer;
 		bool done;
@@ -75,44 +82,62 @@ namespace az {
 			:window_style(style),done(false)
 		{}
 		~Application();
+		void RenderUI();
+		//main application loop
 		void Run();
-		/* AddWidget worse function(backup)
+		/* AddLayer worse function(backup)
 		template<typename T>
-		inline void AddWidget(const std::shared_ptr<T>& _widget, std::string widget_name)
+		inline void AddLayer(const std::shared_ptr<T>& _layer, std::string layer_name)
 		{
-			this->m_widgets[widget_name] = (std::make_shared<T>());
+			this->m_layers[layer_name] = (std::make_shared<T>());
 			
-			//Widget(_widget).OnConstruction();
+			//Layer(_layer).OnConstruction();
 		};
 		*/
 
+		void Clear();
+		void NewFrame();
+		//Creates a dockspace
+		void BeginDockspace(std::string dockspace_name="");
+		void EndDockspace();
+
+		void RenderFrame();
+		void ReloadColorTheme();
+
 		template<typename T, typename ...T_args>
-		inline void AddWidget(std::string widget_name,T_args&... args)
+		inline void AddLayer(std::string layer_name,T_args&... args)
 		{
-			if (widget_name == "") {widget_name += "widget_"+ std::to_string(widget_naming_count++);}//widget default naming
-			static_assert(std::is_base_of<Widget, T>::value, "Added type should be a subclass of az::Widget");
-			this->m_widgets[widget_name]=(std::make_shared<T>(args...));
-			//this->m_widgets[widget_name]->OnConstruction();
-			//TODO: dobavi izvikvane na ->OnConstruction();
+			if (layer_name == "") { layer_name += "layer_"+ std::to_string(layer_naming_count++);}//layer default naming
+			static_assert(std::is_base_of<Layer, T>::value, "Added type should be a subclass of az::Layer");
+			this->m_layerstack.PushLayer(layer_name,std::make_shared<T>(args...));
+		}
+		template<typename T, typename ...T_args>
+		inline void AddOverlay(std::string overlay_name, T_args&... args)
+		{
+			if (overlay_name == "") { overlay_name += "overlay_" + std::to_string(overlay_naming_count++); }//overlay default naming
+			static_assert(std::is_base_of<Layer, T>::value, "Added type should be a subclass of az::Layer");
+			this->m_layerstack.PushOverlay(overlay_name, std::make_shared<T>(args...));
 		}
 
-		inline std::unordered_map<std::string, std::shared_ptr<Widget>>& GetWidgetList()
+		inline LayerStack& GetLayerStack()
 		{
-			return m_widgets;
+			return m_layerstack;
 		}
 
 		inline void AddMenubarCallback(std::function<void()> function) { m_MenubarCallback = function; }
 		inline void AddConfigFlagCallback(std::function<void(ImGuiIO& io)> function) { m_ConfigFlagsCallback=function; }
 		inline void Close() { done = true; }
-		void HideWidget(std::string widget_name);
-		void ShowWidget(std::string widget_name);
-		//std::vector<std::string> GetWidgetsNames();
+		void HideLayer(std::string layer_name);
+		void ShowLayer(std::string layer_name);
+		//std::vector<std::string> GetLayersNames();
 	public:
 		std::function<void()> m_MenubarCallback;//menubar callback function pointer
 		std::function<void(ImGuiIO&)> m_ConfigFlagsCallback;// Configure Flags callback
 	private:
-		//std::vector<std::shared_ptr<Widget>> m_widgets;
-		std::unordered_map<std::string,std::shared_ptr<Widget>> m_widgets;//hash map(name:widget)
+		//std::vector<std::shared_ptr<Layer>> m_layers;
+		
+		LayerStack m_layerstack;
+		//std::unordered_map<std::string,std::shared_ptr<Layer>> m_layers;//hash map(name:layer)
 	};
 	//To be defined in CLIENT
 	Application* CreateApplication(int,char**);
@@ -123,6 +148,7 @@ namespace az {
 		extern Application* app;
 		/// Some Variables are defined in the beginning of
 		/// The main namespace
+		void SetColorsTheme(az::Application* app);
 		void init_glfw();
 		void init_glad();
 		int create_window();
@@ -132,8 +158,5 @@ namespace az {
     }
 
 }
-//MACROS FOR FLAG CONFIGURING (backup)
-//#define ENABLE_CONFIG_FLAGS	(_io,_flag)		_io->ConfigFlags |=	_flag
-//#define DISABLE_CONFIG_FLAGS(_io,_flag)		_io->ConfigFlags &= ^_flag
 
 //#endif

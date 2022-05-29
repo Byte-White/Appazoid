@@ -1,12 +1,12 @@
 ﻿#pragma once
-
-//-----------------------ENTRY POINT-----------------------
-#include "EntryPoint.h"
 //---------------APPLICATION INTERFACE---------------------
 #include "ApplicationInterface/Application.h"
 
-//----------------------WIDGETS----------------------------
+//----------------------UI----------------------------
  #include "UI/Image.h"
- #include "UI/Widget.h"
+ #include "UI/Layer.h"
+ #include "GUI/Gui.h"
 //--------------------LOGGING------------------------------
 #include "Logging/Log.h"
+//-----------------------ENTRY POINT-----------------------
+#include "Core/EntryPoint.h"

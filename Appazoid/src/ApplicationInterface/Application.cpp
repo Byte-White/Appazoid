@@ -8,6 +8,7 @@
 
 namespace az 
 {
+    using az::entrypoint::io;
 
 	Application::~Application()
 	{
@@ -19,7 +20,7 @@ namespace az
 
 	 }
 
-	void Application::Run()
+	void Application::RenderUI()
 	{
 		//menubar
 		if (m_MenubarCallback)
@@ -30,25 +31,144 @@ namespace az
 				ImGui::EndMenuBar();
 			}
 		}
-		//render each widget
-		for (auto& widget : m_widgets)
+		//render each layer
+		for (auto& layer : m_layerstack)
 		{
-			if(widget.second->visible)
-				widget.second->OnRender();
+			if(layer.second->visible)
+				layer.second->OnUIRender();
 		}
 	}
 
-	void Application::HideWidget(std::string widget_name)
-	{
-		if(m_widgets.find(widget_name)!=m_widgets.end())
-			this->m_widgets[widget_name]->visible = false;
-	}
-    void Application::ShowWidget(std::string widget_name)
+    void Application::Run()
     {
-        if (m_widgets.find(widget_name) != m_widgets.end())
-            this->m_widgets[widget_name]->visible = true;
+        this->Clear();
+        this->NewFrame();
+        this->BeginDockspace();
+        //Entry Point
+        this->RenderUI();
+        //Entry Point
+
+        // Renders the ImGUI elements
+        //here
+        this->EndDockspace();
+        this->RenderFrame();
+
+
+        // Swap the back buffer with the front buffer
+        //here
+        //random stuff
+
+        this->window_handler->SwapBuffers();
+        for (auto layer : this->GetLayerStack())
+        {
+            layer.second->OnBufferSwap();
+        }
+        // Take care of all GLFW events
+        glfwPollEvents();
+        // Update and Render additional Platform Windows
+        // Only when Multi-Viewports are enabled
+        if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* backup_current_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_current_context);
+        }
     }
 
+    void Application::Clear()
+    {
+        // Specify the color of the background
+        glClearColor(this->clear_color.r, this->clear_color.g, this->clear_color.b, this->clear_color.a);
+        // Clean the back buffer and assign the new color to it
+        this->renderer.Clear();//glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    void Application::NewFrame()
+    {
+        // Tell OpenGL a new frame is about to begin
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+    }
+
+
+    void Application::BeginDockspace(std::string dockspace_name)
+    {
+        using az::entrypoint::io;
+        if (dockspace_name == "") dockspace_name = this->window_style.title;
+        static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+
+        // ImGuiWindowFlags_NoDocking flag is used to make the parent window not dockable ,
+        // because it would be confusing to have two docking targets within each others.
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+        if (this->m_MenubarCallback)
+            window_flags |= ImGuiWindowFlags_MenuBar;
+
+        const ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(viewport->WorkSize);
+        ImGui::SetNextWindowViewport(viewport->ID);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+        window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+        // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+        ImGuiStyle& style = ImGui::GetStyle();
+        if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            style.WindowRounding = 0.0f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        }
+        // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render the background
+        // and handle the pass-thru hole, so we ask Begin() to not render a background.
+        if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
+            window_flags |= ImGuiWindowFlags_NoBackground;
+
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+        ImGui::Begin((this->window_style.title + " DockSpace").c_str(), nullptr, window_flags);
+        ImGui::PopStyleVar();
+
+        ImGui::PopStyleVar(2);
+
+        if (io->ConfigFlags & ImGuiConfigFlags_DockingEnable)
+        {
+            ImGuiID dockspace_id = ImGui::GetID((dockspace_name + " DockSpace").c_str());
+            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+        }
+    }
+    
+    void Application::EndDockspace()
+    {
+        ImGui::End();
+    }
+
+    void Application::RenderFrame()
+    {
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    }
+
+    void Application::ReloadColorTheme()
+    {
+        entrypoint::SetColorsTheme(this);
+    }
+    
+	void Application::HideLayer(std::string layer_name)
+	{
+        auto it = m_layerstack.find(layer_name);
+		if(it!=m_layerstack.end())
+			it->second->visible = false;
+	}
+    
+    void Application::ShowLayer(std::string layer_name)
+    {
+        auto it = m_layerstack.find(layer_name);
+        if (it != m_layerstack.end())
+            it->second->visible = true;
+    }
+    
 	//-----------------ENTRY POINT-----------------------
 
 
@@ -59,7 +179,7 @@ namespace az
         {
             return ImVec4(c.r, c.g, c.b,1.f);
         }
-        void SetColorsTheme() 
+        void SetColorsTheme(az::Application* app) 
         {
             ImVec4* colors = ImGui::GetStyle().Colors;
             
@@ -231,99 +351,31 @@ namespace az
                 ImGui::StyleColorsClassic();
                 break;
             case az::StyleColor::CustomStyleColors:
-                SetColorsTheme();
+                SetColorsTheme(app);
                 break;
             }
         }
         void Main(int argc, char** argv)
         {
-            for (auto widget : app->GetWidgetList())
+            for (auto widget : app->GetLayerStack())
             {
                 widget.second->OnConstruction();
             }
+            //random shit for FrameBufferTesting
+            // GLuint fbo;
+            // Texture* texture;
+            // 
             // Main while loop
+
             while (!glfwWindowShouldClose(window) && (!app->done))
             {
-                // Specify the color of the background
-                glClearColor(app->clear_color.r, app->clear_color.g, app->clear_color.b, app->clear_color.a);
-                // Clean the back buffer and assign the new color to it
-                app->renderer.Clear();//glClear(GL_COLOR_BUFFER_BIT);
-
-                // Tell OpenGL a new frame is about to begin
-                ImGui_ImplOpenGL3_NewFrame();
-                ImGui_ImplGlfw_NewFrame();
-                ImGui::NewFrame();
-                static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-                // ImGuiWindowFlags_NoDocking flag is used to make the parent window not dockable ,
-                // because it would be confusing to have two docking targets within each others.
-                ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
-                if (app->m_MenubarCallback)
-                    window_flags |= ImGuiWindowFlags_MenuBar;
-
-                const ImGuiViewport* viewport = ImGui::GetMainViewport();
-                ImGui::SetNextWindowPos(viewport->WorkPos);
-                ImGui::SetNextWindowSize(viewport->WorkSize);
-                ImGui::SetNextWindowViewport(viewport->ID);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-                window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-                // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-                ImGuiStyle& style = ImGui::GetStyle();
-                if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-                {
-                    style.WindowRounding = 0.0f;
-                    style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-                }
-                // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render the background
-                // and handle the pass-thru hole, so we ask Begin() to not render a background.
-                if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-                    window_flags |= ImGuiWindowFlags_NoBackground;
-
-
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-                ImGui::Begin((app->window_style.title + " DockSpace").c_str(), nullptr, window_flags);
-                ImGui::PopStyleVar();
-
-                ImGui::PopStyleVar(2);
-
-                if (io->ConfigFlags & ImGuiConfigFlags_DockingEnable)
-                {
-                    ImGuiID dockspace_id = ImGui::GetID((app->window_style.title + " DockSpace").c_str());
-                    ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-                }
-                //Entry Point
                 app->Run();
-                //Entry Point
-
-                ImGui::End();
-                // Renders the ImGUI elements
-                ImGui::Render();
-                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-                for (auto widget : app->GetWidgetList())
-                {
-                    widget.second->OnImGuiRender();
-                }
-                
-                // Swap the back buffer with the front buffer
-                app->window_handler->SwapBuffers();
-                // Take care of all GLFW events
-                glfwPollEvents();
-                // Update and Render additional Platform Windows
-                if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-                {
-                    GLFWwindow* backup_current_context = glfwGetCurrentContext();
-                    ImGui::UpdatePlatformWindows();
-                    ImGui::RenderPlatformWindowsDefault();
-                    glfwMakeContextCurrent(backup_current_context);
-                }
             }
         }
         void cleanup()
         {
-            // Calls the "Destructor"(When Cleaning up)
-            for (auto widget : app->GetWidgetList())
+            // Calls the "Destructor"(Before Cleaning up)
+            for (auto widget : app->GetLayerStack())
             {
                 widget.second->OnDestruction();
             }

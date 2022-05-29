@@ -1,21 +1,21 @@
 ﻿// Appazoid.cpp : Defines the entry point for the application.
 //
 #include "Appazoid/Appazoid.h"
-#include "Core/AppazoidSpecification.h"
+
 //#include <filesystem>
 
 /// INCLUDE CUSTOM WIDGETS
 #include"widgets/FrameBufferWidget.h"
 ///
 
-int z = 0;
-class MainWidget : public az::Widget
+//int z = 0;
+class MainLayer : public az::Layer
 {
 	std::string name;
 	std::unique_ptr<az::Image> img;
 	//std::unique_ptr<az::WindowHandler> win;
 public:
-	MainWidget(const std::string& name)
+	MainLayer(const std::string& name)
 		:name(name)
 	{
 		//win = std::make_unique<az::WindowHandler>(az::WindowStyle(555, 555));
@@ -23,17 +23,18 @@ public:
 
 	void OnConstruction() override
 	{
-		img = std::make_unique<az::Image>("D:/Files/MG/img/" + name + ".PNG");
+		img = std::make_unique<az::Image>("D:/Files/MG/img/" + name + ".PNG");//TODO: Add exceptions and dont crash when an image is not found.
 	}
 
-	void OnRender() override
+	void OnUIRender() override
 	{
 		ImGui::Begin(name.c_str());
+
 		//img->Bind(z);
 		//if (z == 0)z = 1;
 		//else z = 0;
 		//img->Bind(0);
-		ImGui::ImageButton((void*)img->GetTextureID(), {(float)img->GetWidth(),(float)img->GetHeight()});
+		ImGui::ImageButton(*img, {(float)img->GetWidth(),(float)img->GetHeight()});
 		ImGui::Text("Appazoid Test Project");
 		ImGui::Text("Framerate: %.2f", ImGui::GetIO().Framerate);
 		ImGui::End();
@@ -45,7 +46,7 @@ private:
 };
 
 
-class ContentBrowser : public az::Widget
+class ContentBrowser : public az::Layer
 {
 	std::string m_folder_path;
 	std::unique_ptr<az::Image> img;
@@ -63,7 +64,7 @@ public:
 	{
 	}
 
-	void OnRender() override
+	void OnUIRender() override
 	{
 		ImGui::Begin(m_folder_path.c_str());
 		//for()
@@ -71,23 +72,51 @@ public:
 
 		static int sz[2] = { img->GetWidth(),img->GetHeight() };
 		ImGui::SliderInt2("size:", sz, 24, 1024);
-		ImGui::Image((void*)(img->GetTextureID()), { (float)sz[0],(float)sz[1] });
+		ImGui::Image(*img, glm::ivec2(sz[0],sz[1]));
+		//ImGui::Image((void*)(img->GetTextureID()), { (float)sz[0],(float)sz[1] });
+		
 		ImGui::End();
 	}
-	void OnImGuiRender() override
+	void OnBufferSwap() override
 	{
 	}
 private:
 
 };
 
+class TestLayer: public az::Layer
+{
+public:
+	TestLayer()
+	{
 
+	}
+	void OnConstruction() override
+	{
+
+	}
+	void OnDestruction() override
+	{
+
+	}
+	void OnUIRender() override
+	{
+		ImGui::Begin("Hello World");
+		ImGui::PushItemWidth(500);
+		ImGui::TextColored(ImVec4(255, 0, 0, 1), "Hi There!");
+		ImGui::SetCursorPosY(ImGui::GetWindowSize().y-200);
+		//ImGui::SameLine();
+		ImGui::TextColored(ImVec4(0, 255, 0, 1), "Hi There!");
+		ImGui::TextColored(ImVec4(0, 0, 255, 1), "Hi There!");
+		ImGui::End();
+	}
+};
 
 void ConfigFlags(ImGuiIO& io)
 {
 	az::EnableConfigFlag(io, ImGuiConfigFlags_DockingEnable);
 	az::EnableConfigFlag(io, ImGuiConfigFlags_NavEnableKeyboard);
-	//az::EnableConfigFlag(io,ImGuiConfigFlags_ViewportsEnable);
+	//az::EnableConfigFlag(io,ImGuiConfigFlags_ViewportsEnable);//Errors when using viewports
 }
 
 
@@ -95,8 +124,8 @@ az::Application* az::CreateApplication(int argc, char** argv)
 {
 
 	az::WindowStyle style;
-	style.size = GetMonitorResolution();
-	style.monitor = glfwGetPrimaryMonitor();
+	style.size = GetMonitorResolution()-500;
+	//style.monitor = glfwGetPrimaryMonitor();
 	style.title = "Appazoid Application";
 	style.stylecolor = az::StyleColor::CustomStyleColors;
 	Application* app = new Application(style);
@@ -110,20 +139,21 @@ az::Application* az::CreateApplication(int argc, char** argv)
 			}
 		}
 	);
-	app->AddWidget<MainWidget>("first_widget", "my window");
-	app->AddWidget<MainWidget>("second_widget", "not my window");
-	app->AddWidget<ContentBrowser>("content_browser","D:/Files/");
-	//app->AddWidget<MFrameBuffer>("framebuffer_widget", "FrameBuffer");//TODO: Fix The Errors
+	app->AddOverlay<TestLayer>("test_layer");
+	app->AddLayer<MainLayer>("first_layer", "my window");
+	app->AddLayer<MainLayer>("second_layer", "not my window");
+	app->AddLayer<ContentBrowser>("content_browser","D:/Files/");
+	//app->AddLayer<MFrameBuffer>("framebuffer_widget", "FrameBuffer");//TODO: Fix The Errors
 	az::AppazoidSpecification::Print();
 	az::MemoryTracker::Print();
-	for (auto& i : app->GetWidgetList())
+	for (auto& i : app->GetLayerStack())
 	{
+
 		std::cout << i.first << " ";
 	}
 	std::cout << std::endl;
-	//app->HideWidget("first_widget");
-	//std::shared_ptr<MainWidget> w2 = std::make_shared<MainWidget>();
-	//app->AddWidget(w2);
+	//app->HideLayer("first_widget");
+	//std::shared_ptr<MainLayer> w2 = std::make_shared<MainLayer>();
+	//app->AddLayer(w2);
 	return app;
 }
-//TODO: Test all functions

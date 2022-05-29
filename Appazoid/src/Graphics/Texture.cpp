@@ -2,8 +2,8 @@
 #include "Logging/Log.h"
 namespace az 
 {
-	Texture::Texture()
-		:m_RendererID(0), m_Height(0), m_Width(0), m_BPP(0)
+	Texture::Texture(const ImageFormat& format)
+		:m_RendererID(0), m_Height(0), m_Width(0), m_BPP(0),m_format(format)
 	{
 		//if(CreateTextureInConstructor())
 		CreateTexture();
@@ -16,7 +16,7 @@ namespace az
 	}
 	Texture::~Texture()
 	{
-		this->DeleteTexture();//THIS WILL DELETE THE TEXTURE BEFORE SHOWING IT IF ITS DEFINED IN OnRender()!
+		this->DeleteTexture();//THIS WILL DELETE THE TEXTURE BEFORE SHOWING IT IF ITS DEFINED IN OnUIRender()!
 	}
 
 	void Texture::CreateTexture()

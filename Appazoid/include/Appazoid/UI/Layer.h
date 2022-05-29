@@ -1,22 +1,22 @@
 #pragma once
-
 #include "imgui.h"
+
 
 namespace az
 {
 
-	class Widget
+	class Layer
 	{
 	protected:
 		//ImGuiWindowFlags window_flags;
 	public:
 		bool visible = true;
-		virtual ~Widget() = default;
+		virtual ~Layer() = default;
 		
 		//On Rendering Widgets
-		virtual void OnRender(){}
-		//On Rendering ImGui Frame
-		virtual void OnImGuiRender(){}
+		virtual void OnUIRender()		{}
+		//On Rendering Frame
+		virtual void OnBufferSwap()		{}
 		
 		virtual void OnConstruction()	{}
 		virtual void OnDestruction()	{}

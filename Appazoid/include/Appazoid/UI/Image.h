@@ -11,8 +11,8 @@ namespace az
 		std::string m_FilePath;
 		unsigned char* m_LocalBuffer;
 	public:
-		Image(const std::string& path)
-			:m_FilePath(path), m_LocalBuffer(nullptr)
+		Image(const std::string& path,ImageFormat format = ImageFormat::RGBA)
+			:m_FilePath(path), m_LocalBuffer(nullptr), Texture(format)
 		{
 			//Texture's Constructor will get called.
 			//stbi_set_flip_vertically_on_load(1);
@@ -25,7 +25,7 @@ namespace az
 			glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
 			#endif
 
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_LocalBuffer);
+			glTexImage2D(GL_TEXTURE_2D, 0, ImageFormatToOpenGL(m_format), m_Width, m_Height, 0, ImageFormatToOpenGL(m_format), GL_UNSIGNED_BYTE, m_LocalBuffer);
 			//glBindTexture(GL_TEXTURE_2D, 0);
 			if (m_LocalBuffer)
 				stbi_image_free(m_LocalBuffer);

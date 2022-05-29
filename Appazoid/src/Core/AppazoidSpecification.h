@@ -2,8 +2,20 @@
 
 #include "Logging/Log.h"
 #include "glad/glad.h"
+#include "PlatformDetection.h"
 
 namespace az {
+	namespace RenderAPI
+	{
+		enum class API
+		{
+			None = 0,
+			OpenGL
+			//Vulkan,
+			//DirectX
+		};
+	}
+	
 	class AppazoidSpecification
 	{
 	private:
@@ -83,7 +95,10 @@ namespace az {
 				return 0;//ERROR!
 			}
 		}
-
+		static inline RenderAPI::API GetAPI() 
+		{
+			return RenderAPI::API::OpenGL;
+		}
 
 	private:
 		AppazoidSpecification()
@@ -92,7 +107,15 @@ namespace az {
 		}
 		void m_Print()
 		{
-			APPAZOID_CORE_INFO("Specification:\n\t\tGetTypeOfIndices()\t=\t{0}\n\t\tGetTypeOfPixelData()\t=\t{1}\n\t\tGetFormatOfPixelData()\t=\t{2}",GetTypeOfIndices(),GetTypeOfPixelData(),GetFormatOfPixelData());
+			APPAZOID_CORE_INFO
+			(	
+				"Specification:\n\t\t"
+				"GetTypeOfIndices()\t=\t{0}\n\t\t"
+				"GetTypeOfPixelData()\t=\t{1}\n\t\t"
+				"GetFormatOfPixelData()\t=\t{2}\n\t\t"
+				"GetAPI()\t\t=\t{3}"
+				,GetTypeOfIndices(),GetTypeOfPixelData(),GetFormatOfPixelData(),(int)GetAPI()
+			);
 		}
 	};
 	//unsigned int AppazoidSpecification::type_of_indices = GL_UNSIGNED_INT;

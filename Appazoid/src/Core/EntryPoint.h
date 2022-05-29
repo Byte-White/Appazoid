@@ -9,6 +9,10 @@ extern az::Application* az::CreateApplication(int,char**);
 #include "MemoryManagment/MemoryTracker.h"
 
 
+#include "Core/Input.h"
+
+
+
 #ifndef AZ_CUSTOM_MAIN // Define to make a custom main function
 int main(int argc,char** argv)
 {
@@ -23,6 +27,7 @@ int main(int argc,char** argv)
         APPAZOID_CORE_ERROR("Failed creating a window.");
         return -1;
     }
+    az::Input::SetWindow(az::entrypoint::app->window_handler->GetGLFWWindow());//Selects Window
     APPAZOID_CORE_INFO("Initializing IMGUI...");
     az::entrypoint::init_imgui();
 
