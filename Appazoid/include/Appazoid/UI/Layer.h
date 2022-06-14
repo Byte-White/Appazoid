@@ -1,5 +1,6 @@
 #pragma once
 #include "imgui.h"
+#include "Events/Event.h"
 
 
 namespace az
@@ -17,7 +18,8 @@ namespace az
 		virtual void OnUIRender()		{}
 		//On Rendering Frame
 		virtual void OnBufferSwap()		{}
-		
+
+		virtual void OnEvent(Event&) {}
 		virtual void OnConstruction()	{}
 		virtual void OnDestruction()	{}
 		/*virtual void SetFlags()

@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include "../../include/Appazoid/UI/Layer.h"
+#include "Core/Base.h"
 
 namespace az
 {
@@ -11,7 +12,7 @@ namespace az
 	{
 	public:
 		using Layer_T = az::Layer;
-		using Layer_Ptr = std::shared_ptr<Layer_T>;
+		using Layer_Ptr = az::Ref<Layer_T>;
 		using Layer_Container_Data_T = std::pair<std::string, Layer_Ptr>;
 		using Layer_Container_T = std::vector<Layer_Container_Data_T>;
 	private:

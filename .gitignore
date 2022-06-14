@@ -1,3 +1,5 @@
+#Ignore main CMakeLists.txt file
+
 #Directories
 .vs/
 .vscode/

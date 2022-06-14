@@ -4,22 +4,28 @@
 #include <iostream>
 #include <Logging/Log.h>
 
+#include "Events/Event.h"
+#include "Events/ApplicationEvent.h"
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
+
 
 
 namespace az 
 {
     using az::entrypoint::io;
 
-	Application::~Application()
+    Application::Application(WindowStyle& style) 
+        :window_style(style), done(false)
+    {
+        //Todo: premesti create_window tuk i mahni oniq shibani funkcii
+    }
+
+    Application::~Application()
 	{
 
 	}
 	
-	 void ApplicationMain()
-	 {
-
-	 }
-
 	void Application::RenderUI()
 	{
 		//menubar
@@ -38,9 +44,14 @@ namespace az
 				layer.second->OnUIRender();
 		}
 	}
-
+    static bool event_callbacks_set = false;
     void Application::Run()
     {
+        if (!event_callbacks_set)
+        {
+            window_handler->SetEventCallback(AZ_BIND_EVENT_FN(Application::OnEvent));
+            event_callbacks_set = true;
+        }
         this->Clear();
         this->NewFrame();
         this->BeginDockspace();
@@ -74,6 +85,44 @@ namespace az
             ImGui::RenderPlatformWindowsDefault();
             glfwMakeContextCurrent(backup_current_context);
         }
+    }
+
+    void Application::OnEvent(Event& e)
+    {
+        //APPAZOID_CORE_WARN("ON EVENT");
+        EventDispatcher dispatcher(e);
+        dispatcher.Dispatch<WindowCloseEvent>(AZ_BIND_EVENT_FN(Application::OnWindowClose));
+        dispatcher.Dispatch<WindowResizeEvent>(AZ_BIND_EVENT_FN(Application::OnWindowResize));
+
+        for (auto it = m_layerstack.rbegin(); it != m_layerstack.rend(); ++it)
+        {
+            
+            if (e.Handled)
+                break;
+            (*it).second->OnEvent(e);
+        }
+    }
+
+    bool Application::OnWindowClose(WindowCloseEvent& e)
+    {
+        //APPAZOID_CORE_INFO("OnWindowClose");
+        done = true;
+        return true;
+    }
+
+    bool Application::OnWindowResize(WindowResizeEvent& e)
+    {
+        //APPAZOID_CORE_INFO("OnWindowResize");
+        if (e.GetWidth() == 0 || e.GetHeight() == 0)
+        {
+            m_Minimized = true;
+            return false;
+        }
+
+        m_Minimized = false;
+        Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+
+        return false;
     }
 
     void Application::Clear()
@@ -150,10 +199,11 @@ namespace az
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
+    /*
     void Application::ReloadColorTheme()
     {
-        entrypoint::SetColorsTheme(this);
-    }
+        //entrypoint::SetColorsTheme(this);
+    }*/
     
 	void Application::HideLayer(std::string layer_name)
 	{
@@ -174,84 +224,10 @@ namespace az
 
     namespace entrypoint
     {
-        //helper function for SetColorsTheme()
-        const ImVec4 vec3toimguivec4(const glm::vec3& c)
-        {
-            return ImVec4(c.r, c.g, c.b,1.f);
-        }
-        void SetColorsTheme(az::Application* app) 
-        {
-            ImVec4* colors = ImGui::GetStyle().Colors;
-            
-            colors[ImGuiCol_Text] = vec3toimguivec4(app->window_style.colors.Text);
-            colors[ImGuiCol_TextDisabled] = vec3toimguivec4(app->window_style.colors.TextDisabled);
-            colors[ImGuiCol_WindowBg] = vec3toimguivec4(app->window_style.colors.WindowBg);
-            colors[ImGuiCol_ChildBg] = vec3toimguivec4(app->window_style.colors.ChildBg);
-            colors[ImGuiCol_PopupBg] = vec3toimguivec4(app->window_style.colors.PopupBg);
-            colors[ImGuiCol_Border] = vec3toimguivec4(app->window_style.colors.Border);
-            colors[ImGuiCol_BorderShadow] = vec3toimguivec4(app->window_style.colors.BorderShadow);
-            colors[ImGuiCol_FrameBg] = vec3toimguivec4(app->window_style.colors.FrameBg);
-            colors[ImGuiCol_FrameBgHovered] = vec3toimguivec4(app->window_style.colors.FrameBgHovered);
-            colors[ImGuiCol_FrameBgActive] = vec3toimguivec4(app->window_style.colors.FrameBgActive);
-            colors[ImGuiCol_TitleBg] = vec3toimguivec4(app->window_style.colors.TitleBg);
-            colors[ImGuiCol_TitleBgActive] = vec3toimguivec4(app->window_style.colors.TitleBgActive);
-            colors[ImGuiCol_TitleBgCollapsed] = vec3toimguivec4(app->window_style.colors.TitleBgCollapsed);
-            colors[ImGuiCol_MenuBarBg] = vec3toimguivec4(app->window_style.colors.MenuBarBg);
-            colors[ImGuiCol_ScrollbarBg] = vec3toimguivec4(app->window_style.colors.ScrollbarBg);
-            colors[ImGuiCol_ScrollbarGrab] = vec3toimguivec4(app->window_style.colors.ScrollbarGrab);
-            colors[ImGuiCol_ScrollbarGrabHovered] = vec3toimguivec4(app->window_style.colors.ScrollbarGrabHovered);
-            colors[ImGuiCol_ScrollbarGrabActive] = vec3toimguivec4(app->window_style.colors.ScrollbarGrabActive);
-            colors[ImGuiCol_CheckMark] = vec3toimguivec4(app->window_style.colors.CheckMark);
-            colors[ImGuiCol_SliderGrab] = vec3toimguivec4(app->window_style.colors.SliderGrab);
-            colors[ImGuiCol_SliderGrabActive] = vec3toimguivec4(app->window_style.colors.SliderGrabActive);
-            colors[ImGuiCol_Button] = vec3toimguivec4(app->window_style.colors.Button);
-            colors[ImGuiCol_ButtonHovered] = vec3toimguivec4(app->window_style.colors.ButtonHovered);
-            colors[ImGuiCol_ButtonActive] = vec3toimguivec4(app->window_style.colors.ButtonActive);
-            colors[ImGuiCol_Header] = vec3toimguivec4(app->window_style.colors.Header);
-            colors[ImGuiCol_HeaderHovered] = vec3toimguivec4(app->window_style.colors.HeaderHovered);
-            colors[ImGuiCol_HeaderActive] = vec3toimguivec4(app->window_style.colors.HeaderActive);
-            colors[ImGuiCol_Separator] = vec3toimguivec4(app->window_style.colors.Separator);
-            colors[ImGuiCol_SeparatorHovered] = vec3toimguivec4(app->window_style.colors.SeparatorHovered);
-            colors[ImGuiCol_SeparatorActive] = vec3toimguivec4(app->window_style.colors.SeparatorActive);
-            colors[ImGuiCol_ResizeGrip] = vec3toimguivec4(app->window_style.colors.ResizeGrip);
-            colors[ImGuiCol_ResizeGripHovered] = vec3toimguivec4(app->window_style.colors.ResizeGripHovered);
-            colors[ImGuiCol_ResizeGripActive] = vec3toimguivec4(app->window_style.colors.ResizeGripActive);
-            colors[ImGuiCol_Tab] = vec3toimguivec4(app->window_style.colors.Tab);
-            colors[ImGuiCol_TabHovered] = vec3toimguivec4(app->window_style.colors.TabHovered);
-            colors[ImGuiCol_TabActive] = vec3toimguivec4(app->window_style.colors.TabActive);
-            colors[ImGuiCol_TabUnfocused] = vec3toimguivec4(app->window_style.colors.TabUnfocused);
-            colors[ImGuiCol_TabUnfocusedActive] = vec3toimguivec4(app->window_style.colors.TabUnfocusedActive);
-            colors[ImGuiCol_DockingPreview] = vec3toimguivec4(app->window_style.colors.DockingPreview);
-            colors[ImGuiCol_DockingEmptyBg] = vec3toimguivec4(app->window_style.colors.DockingEmptyBg);
-            colors[ImGuiCol_PlotLines] = vec3toimguivec4(app->window_style.colors.PlotLines);
-            colors[ImGuiCol_PlotLinesHovered] = vec3toimguivec4(app->window_style.colors.PlotLinesHovered);
-            colors[ImGuiCol_PlotHistogram] = vec3toimguivec4(app->window_style.colors.PlotHistogram);
-            colors[ImGuiCol_PlotHistogramHovered] = vec3toimguivec4(app->window_style.colors.PlotHistogramHovered);
-            colors[ImGuiCol_TableHeaderBg] = vec3toimguivec4(app->window_style.colors.TableHeaderBg);
-            colors[ImGuiCol_TableBorderStrong] = vec3toimguivec4(app->window_style.colors.TableBorderStrong);
-            colors[ImGuiCol_TableBorderLight] = vec3toimguivec4(app->window_style.colors.TableBorderLight);
-            colors[ImGuiCol_TableRowBg] = vec3toimguivec4(app->window_style.colors.TableRowBg);
-            colors[ImGuiCol_TableRowBgAlt] = vec3toimguivec4(app->window_style.colors.TableRowBgAlt);
-            colors[ImGuiCol_TextSelectedBg] = vec3toimguivec4(app->window_style.colors.TextSelectedBg);
-            colors[ImGuiCol_DragDropTarget] = vec3toimguivec4(app->window_style.colors.DragDropTarget);
-            colors[ImGuiCol_NavHighlight] = vec3toimguivec4(app->window_style.colors.NavHighlight);
-            colors[ImGuiCol_NavWindowingHighlight] = vec3toimguivec4(app->window_style.colors.NavWindowingHighlight);
-            colors[ImGuiCol_NavWindowingDimBg] = vec3toimguivec4(app->window_style.colors.NavWindowingDimBg);
-            colors[ImGuiCol_ModalWindowDimBg] = vec3toimguivec4(app->window_style.colors.ModalWindowDimBg);
-
-            // IO
-
-            ImGuiIO& io = ImGui::GetIO();
-
-            io.FontGlobalScale = app->window_style.FontGlobalScale;
-        }
 
         GLFWwindow* window;
         Application* app;
         ImGuiIO* io;
-
-        
-
 
         void init_glfw()
         {
@@ -301,7 +277,7 @@ namespace az
         int create_window()
         {
             // Create a window with WindowHandler
-            app->window_handler = std::make_unique<WindowHandler>(app->window_style);
+            app->window_handler = az::make_scope<WindowHandler>(app->window_style);
             window = app->window_handler->GetGLFWWindow();
             // Error check if the window fails to create
             if (window == NULL)
@@ -317,13 +293,12 @@ namespace az
             // Specify the viewport of OpenGL in the Window
             // In this case the viewport goes from x = 0, y = 0, to x = width, y = height
             glViewport(0, 0, app->window_style.width, app->window_style.height);
+            az::Input::SetWindow(az::entrypoint::app->window_handler->GetGLFWWindow());//Selects Window
+
             return 0;
         }
         void init_imgui()
         {
-            // Initialize ImGUI
-            IMGUI_CHECKVERSION();
-            ImGui::CreateContext();
             io = &ImGui::GetIO(); (void)io;
 
             //ImGui Flags (Enabled By Default)
@@ -350,13 +325,14 @@ namespace az
             case az::StyleColor::StyleColorClassic:
                 ImGui::StyleColorsClassic();
                 break;
-            case az::StyleColor::CustomStyleColors:
-                SetColorsTheme(app);
-                break;
+            //case az::StyleColor::CustomStyleColors:
+                //SetColorsTheme(app);
+            //    break;
             }
         }
         void Main(int argc, char** argv)
         {
+            //OnConstruction function for all layers
             for (auto widget : app->GetLayerStack())
             {
                 widget.second->OnConstruction();

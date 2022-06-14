@@ -4,113 +4,134 @@
 
 //#include <filesystem>
 
-/// INCLUDE CUSTOM WIDGETS
-#include"widgets/FrameBufferWidget.h"
-///
-
-//int z = 0;
-class MainLayer : public az::Layer
-{
-	std::string name;
-	std::unique_ptr<az::Image> img;
-	//std::unique_ptr<az::WindowHandler> win;
-public:
-	MainLayer(const std::string& name)
-		:name(name)
-	{
-		//win = std::make_unique<az::WindowHandler>(az::WindowStyle(555, 555));
-	}
-
-	void OnConstruction() override
-	{
-		img = std::make_unique<az::Image>("D:/Files/MG/img/" + name + ".PNG");//TODO: Add exceptions and dont crash when an image is not found.
-	}
-
-	void OnUIRender() override
-	{
-		ImGui::Begin(name.c_str());
-
-		//img->Bind(z);
-		//if (z == 0)z = 1;
-		//else z = 0;
-		//img->Bind(0);
-		ImGui::ImageButton(*img, {(float)img->GetWidth(),(float)img->GetHeight()});
-		ImGui::Text("Appazoid Test Project");
-		ImGui::Text("Framerate: %.2f", ImGui::GetIO().Framerate);
-		ImGui::End();
-
-		//win->SwapBuffers();
-	}
-private:
-
-};
-
-
-class ContentBrowser : public az::Layer
-{
-	std::string m_folder_path;
-	std::unique_ptr<az::Image> img;
-public:
-	ContentBrowser(const std::string& folder_path)
-		:m_folder_path(folder_path)
-	{
-	}
-	void OnConstruction()
-	{
-
-		img = std::make_unique<az::Image>("D:/Files/logo.jpg");
-	}
-	~ContentBrowser()
-	{
-	}
-
-	void OnUIRender() override
-	{
-		ImGui::Begin(m_folder_path.c_str());
-		//for()
-		ImGui::Button("TODO: make a content browser.");
-
-		static int sz[2] = { img->GetWidth(),img->GetHeight() };
-		ImGui::SliderInt2("size:", sz, 24, 1024);
-		ImGui::Image(*img, glm::ivec2(sz[0],sz[1]));
-		//ImGui::Image((void*)(img->GetTextureID()), { (float)sz[0],(float)sz[1] });
-		
-		ImGui::End();
-	}
-	void OnBufferSwap() override
-	{
-	}
-private:
-
-};
-
 class TestLayer: public az::Layer
 {
+	unsigned int fbo;
+	unsigned int texture;
 public:
 	TestLayer()
 	{
-
 	}
+
+	void SetupFrameBuffer()
+	{
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 800, 800, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo, 0);
+	}
+
 	void OnConstruction() override
 	{
+		//SetupFrameBuffer();
+		/*glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
 
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+		glTexImage2D(
+			GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, 800, 600, 0,
+			GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, NULL
+		);
+
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 	}
-	void OnDestruction() override
+	
+	void OnEvent(az::Event& e) override
 	{
-
+		az::EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<az::KeyReleasedEvent>(AZ_BIND_EVENT_FN(TestLayer::OnKeyReleased));
 	}
+
+	bool OnKeyReleased(az::KeyReleasedEvent& e)
+	{
+		if (e.GetKeyCode() == az::Key::A) APPAZOID_INFO("\'A\' Got Released");
+		return false;
+	}
+
 	void OnUIRender() override
 	{
-		ImGui::Begin("Hello World");
-		ImGui::PushItemWidth(500);
-		ImGui::TextColored(ImVec4(255, 0, 0, 1), "Hi There!");
-		ImGui::SetCursorPosY(ImGui::GetWindowSize().y-200);
-		//ImGui::SameLine();
-		ImGui::TextColored(ImVec4(0, 255, 0, 1), "Hi There!");
-		ImGui::TextColored(ImVec4(0, 0, 255, 1), "Hi There!");
+		static bool show_info = true;
+		//static az::Ref<az::Image> viewport = az::make_ref<az::Image>("D:/Files/MG/img/2.png");
+		//static az::Ref<az::Texture> texture = az::make_ref<az::Texture>();
+
+
+		ImGui::Begin("Viewport");
+		/*glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		//here
+		//static az::Texture data;
+		static az::Renderer renderer;
+
+		static float imageData[] =
+		{//		x		y
+			 -0.5f,	-0.5f,	// point 1
+			  0.5f,	-0.5f,	// point 2
+			  0.5f,	 0.5f,	// point 3
+			 -0.5f,	 0.5f,	// point 4
+		};
+
+		static unsigned int imageIndex[] =
+		{
+			0, 1, 2,		// triangle 1
+			2, 3, 0,		// triangle 2
+		};
+
+		az::VertexArray va;
+		az::VertexBuffer vb(imageData, sizeof(imageData));
+		va.Bind();
+		vb.Bind();
+		az::VertexBufferLayout layout;
+		layout.Push<float>(2);
+		va.AddBuffer(vb, layout);
+
+		az::IndexBuffer ib(imageIndex, 6);
+		ib.Bind();
+
+		az::Shader shader("D:/Files/myshader2.shader");
+		shader.Bind();
+
+		//glClearColor(1.0f, 1.0f, 0.0f, 1.0f);
+		//renderer.Clear();
+		//shader.SetUniform4f("u_Color", r, g, b, 1.0f);
+
+		renderer.Draw(va, ib, shader);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		ImGui::Image((void*)fbo, { ImGui::GetWindowSize().x - 50, ImGui::GetWindowSize().y - 50 });
+		//here*/
 		ImGui::End();
+
+		ImGui::Begin("Status");
+		ImGui::Checkbox("show info", &show_info);
+		ImGui::SameLine();
+		static bool show_col_editor = false;
+		ImGui::Checkbox("show color editor", &show_col_editor);
+		if(show_info)
+		{
+			ImGui::Text("Delta Time: %f", ImGui::GetIO().DeltaTime);
+			ImGui::TextColored(ImVec4(1, 1, 0, 1), "Framerate: %.2f", ImGui::GetIO().Framerate);
+		}
+
+		if(show_col_editor)
+		{
+			ImGui::Begin("Color Editor");
+			az::app->window_style.ColorEditor();
+			ImGui::End();
+		}
+		ImGui::End();
+
 	}
 };
+
+
 
 void ConfigFlags(ImGuiIO& io)
 {
@@ -127,7 +148,7 @@ az::Application* az::CreateApplication(int argc, char** argv)
 	style.size = GetMonitorResolution()-500;
 	//style.monitor = glfwGetPrimaryMonitor();
 	style.title = "Appazoid Application";
-	style.stylecolor = az::StyleColor::CustomStyleColors;
+	style.stylecolor = az::StyleColor::StyleColorDark;
 	Application* app = new Application(style);
 	app->AddConfigFlagCallback(ConfigFlags);
 	app->AddMenubarCallback([app]()
@@ -139,21 +160,8 @@ az::Application* az::CreateApplication(int argc, char** argv)
 			}
 		}
 	);
-	app->AddOverlay<TestLayer>("test_layer");
-	app->AddLayer<MainLayer>("first_layer", "my window");
-	app->AddLayer<MainLayer>("second_layer", "not my window");
-	app->AddLayer<ContentBrowser>("content_browser","D:/Files/");
-	//app->AddLayer<MFrameBuffer>("framebuffer_widget", "FrameBuffer");//TODO: Fix The Errors
+	app->AddLayer<TestLayer>("test_layer");
 	az::AppazoidSpecification::Print();
 	az::MemoryTracker::Print();
-	for (auto& i : app->GetLayerStack())
-	{
-
-		std::cout << i.first << " ";
-	}
-	std::cout << std::endl;
-	//app->HideLayer("first_widget");
-	//std::shared_ptr<MainLayer> w2 = std::make_shared<MainLayer>();
-	//app->AddLayer(w2);
 	return app;
 }

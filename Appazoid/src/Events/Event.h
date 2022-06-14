@@ -1,9 +1,9 @@
 #pragma once
 #include <functional>
-
-#define BIT(n) (1<<n)
+#include "Core/Base.h"
 
 namespace az {
+
 	enum class EventType
 	{
 		None = 0,
@@ -46,6 +46,7 @@ namespace az {
 			return GetCategoryFlags() & category;
 		}
 	};
+	using EventCallbackFn = std::function<void(Event&)>;
 
 	class EventDispatcher
 	{

@@ -6,6 +6,7 @@
 #include <memory>
 #include <functional>
 
+#include "Core/Base.h"
 #include "Core/AppazoidSpecification.h"
 
 #include "Appazoid/UI/Layer.h"
@@ -37,6 +38,11 @@
 #include "Core/LayerStack.h"
 
 
+#include "Events/Event.h"
+#include "Events/ApplicationEvent.h"
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
+
 namespace az {
 
 	//Config Helper Functions
@@ -63,6 +69,13 @@ namespace az {
 	{ 
 		//extern GLFWwindow* window;
 		extern ImGuiIO* io;
+
+		void init_glfw();
+		void init_glad();
+		int create_window();
+		void init_imgui();
+		void Main(int argc, char** argv);
+		void cleanup();
 	}
 	
 	class Application
@@ -70,31 +83,25 @@ namespace az {
 	private:
 		int layer_naming_count	=0;// helps to make a default name (example: layer_123)
 		int overlay_naming_count=0;// helps to make a default name (example: overlay_123)
+		bool m_Minimized = false;
 	public:
 		Renderer renderer;
 		bool done;
 		glm::vec4 clear_color = glm::vec4{ 0.0f, 0.0f, 0.0f, 1.0f };//float clear_color[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
 
-		WindowStyle window_style;//was const
-		std::unique_ptr<WindowHandler> window_handler;
+		WindowStyle window_style;
+		az::Scope<WindowHandler> window_handler;
 	public:
-		Application(WindowStyle& style = WindowStyle(255, 255, "Appazoid Application"))
-			:window_style(style),done(false)
-		{}
-		~Application();
-		void RenderUI();
+		Application(WindowStyle& style = WindowStyle(255, 255, "Appazoid Application"));
+		virtual ~Application();
+		virtual void RenderUI();
 		//main application loop
-		void Run();
-		/* AddLayer worse function(backup)
-		template<typename T>
-		inline void AddLayer(const std::shared_ptr<T>& _layer, std::string layer_name)
-		{
-			this->m_layers[layer_name] = (std::make_shared<T>());
-			
-			//Layer(_layer).OnConstruction();
-		};
-		*/
+		virtual void Run();
+		void OnEvent(Event& e);
+		bool OnWindowClose(WindowCloseEvent& e);
+		bool OnWindowResize(WindowResizeEvent& e);
 
+		inline bool IsMinimized() { return m_Minimized; }
 		void Clear();
 		void NewFrame();
 		//Creates a dockspace
@@ -102,21 +109,21 @@ namespace az {
 		void EndDockspace();
 
 		void RenderFrame();
-		void ReloadColorTheme();
+		//void ReloadColorTheme();
 
 		template<typename T, typename ...T_args>
 		inline void AddLayer(std::string layer_name,T_args&... args)
 		{
 			if (layer_name == "") { layer_name += "layer_"+ std::to_string(layer_naming_count++);}//layer default naming
 			static_assert(std::is_base_of<Layer, T>::value, "Added type should be a subclass of az::Layer");
-			this->m_layerstack.PushLayer(layer_name,std::make_shared<T>(args...));
+			this->m_layerstack.PushLayer(layer_name,az::make_ref<T>(args...));
 		}
 		template<typename T, typename ...T_args>
 		inline void AddOverlay(std::string overlay_name, T_args&... args)
 		{
 			if (overlay_name == "") { overlay_name += "overlay_" + std::to_string(overlay_naming_count++); }//overlay default naming
 			static_assert(std::is_base_of<Layer, T>::value, "Added type should be a subclass of az::Layer");
-			this->m_layerstack.PushOverlay(overlay_name, std::make_shared<T>(args...));
+			this->m_layerstack.PushOverlay(overlay_name, az::make_ref<T>(args...));
 		}
 
 		inline LayerStack& GetLayerStack()
@@ -130,14 +137,12 @@ namespace az {
 		void HideLayer(std::string layer_name);
 		void ShowLayer(std::string layer_name);
 		//std::vector<std::string> GetLayersNames();
-	public:
+		friend void entrypoint::init_imgui();//allows imgui initialization to use callback functions
+	private:
 		std::function<void()> m_MenubarCallback;//menubar callback function pointer
 		std::function<void(ImGuiIO&)> m_ConfigFlagsCallback;// Configure Flags callback
-	private:
-		//std::vector<std::shared_ptr<Layer>> m_layers;
-		
+
 		LayerStack m_layerstack;
-		//std::unordered_map<std::string,std::shared_ptr<Layer>> m_layers;//hash map(name:layer)
 	};
 	//To be defined in CLIENT
 	Application* CreateApplication(int,char**);
@@ -148,14 +153,10 @@ namespace az {
 		extern Application* app;
 		/// Some Variables are defined in the beginning of
 		/// The main namespace
-		void SetColorsTheme(az::Application* app);
-		void init_glfw();
-		void init_glad();
-		int create_window();
-		void init_imgui();
-        void Main(int argc, char** argv);
-        void cleanup();
+		//void SetColorsTheme(az::Application* app);
     }
+
+	using entrypoint::app;
 
 }
 

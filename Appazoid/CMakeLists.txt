@@ -7,6 +7,10 @@ project(Appazoid)
 add_library(
 ${PROJECT_NAME}
   STATIC
+  #Core
+  "src/Core/MemoryTracker.h" 
+  "src/Core/Base.h"
+
   #Application
   "src/ApplicationInterface/Application.cpp"
   "src/ApplicationInterface/Application.h"
@@ -41,12 +45,10 @@ ${PROJECT_NAME}
  "src/ApplicationInterface/Window/WindowHandler.h"
  "src/ApplicationInterface/Window/WindowHandler.cpp"
  "src/ApplicationInterface/Window/WindowStyle.h"
- #Memory Managment
- "src/MemoryManagment/MemoryTracker.h" 
- "src/ImGuiBuild/imguibuild.cpp"
  #UI
  "src/GUI/Gui.h" 
  "src/GUI/Gui.cpp" 
+ "src/ImGuiBuild/imguibuild.cpp"
  #Event System
  "src/Events/Event.h" 
  "src/Events/ApplicationEvent.h"
@@ -56,7 +58,10 @@ ${PROJECT_NAME}
  #Input
  "src/Core/Input.h" 
  "src/Core/Input.cpp" 
-    "src/Core/LayerStack.h" "src/Core/LayerStack.cpp")
+ #LayerStack
+ "src/Core/LayerStack.h" 
+ "src/Core/LayerStack.cpp" 
+)
 
 #Appazoid Add Include Directories
 target_include_directories( 
