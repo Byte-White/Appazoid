@@ -16,7 +16,8 @@ namespace az
 	bool GLLogCall(const char* function, const char* file, int line) {
 		while (GLenum error = glGetError()) 
 		{
-			std::cout << "[OpenGL Error] (" << error << ") " << function << " " << file << " " << line << std::endl;//TODO: Add With SPDLOG
+			//std::cout << "[OpenGL Error] (" << error << ") " << function << " " << file << " " << line << std::endl;//TODO: Add With SPDLOG
+			APPAZOID_CORE_CRITICAL("[OpenGL Error] ({0}) {1} {2} {3}", error, function, file, line);
 			return false;
 		}
 		return true;

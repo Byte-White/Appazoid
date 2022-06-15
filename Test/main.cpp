@@ -1,129 +1,116 @@
 ﻿// Appazoid.cpp : Defines the entry point for the application.
 //
 #include "Appazoid/Appazoid.h"
-#include "Core/AppazoidSpecification.h"
-//#include <filesystem>
+#include <fstream>
 
-/// INCLUDE CUSTOM WIDGETS
-#include"widgets/FrameBufferWidget.h"
-///
-
-int z = 0;
-class MainWidget : public az::Widget
+class MainLayer : public az::Layer
 {
-	std::string name;
-	std::unique_ptr<az::Image> img;
-	//std::unique_ptr<az::WindowHandler> win;
+	std::string readmefile_text = "Failed reading from \'README.md\'";
 public:
-	MainWidget(const std::string& name)
-		:name(name)
+	MainLayer()
 	{
-		//win = std::make_unique<az::WindowHandler>(az::WindowStyle(555, 555));
+		std::ifstream readmefile;
+		readmefile.open("README.md");
+
+		if (readmefile.is_open())
+		{
+			std::stringstream buffer;
+			buffer << readmefile.rdbuf();
+			readmefile_text = buffer.str();
+			readmefile.close();
+		}
 	}
 
 	void OnConstruction() override
 	{
-		img = std::make_unique<az::Image>("D:/Files/MG/img/" + name + ".PNG");
+
 	}
 
-	void OnRender() override
+	void OnEvent(az::Event& e) override
 	{
-		ImGui::Begin(name.c_str());
-		//img->Bind(z);
-		//if (z == 0)z = 1;
-		//else z = 0;
-		//img->Bind(0);
-		ImGui::ImageButton((void*)img->GetTextureID(), {(float)img->GetWidth(),(float)img->GetHeight()});
-		ImGui::Text("Appazoid Test Project");
-		ImGui::Text("Framerate: %.2f", ImGui::GetIO().Framerate);
+		az::EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<az::KeyReleasedEvent>(AZ_BIND_EVENT_FN(OnKeyReleased));
+	}
+
+	bool OnKeyReleased(az::KeyReleasedEvent& e)
+	{
+		if (e.GetKeyCode() == az::Key::Escape)
+		{
+			//... do something ...
+			APPAZOID_DEBUG("\'ESC\' Got Released");
+		}
+		return false;
+	}
+
+	void OnUIRender() override
+	{
+		ImGui::Begin("README.md Window");
+		ImGui::TextWrapped(readmefile_text.c_str());
 		ImGui::End();
 
-		//win->SwapBuffers();
-	}
-private:
+		//Status 
+		static bool show_info = true;
+		static bool show_col_editor = false;
 
+		ImGui::Begin("Status");
+		ImGui::Checkbox("show info", &show_info);
+		ImGui::SameLine();
+		ImGui::Checkbox("show color editor", &show_col_editor);
+		if (show_info)
+		{
+			ImGui::Text("Delta Time: %f", ImGui::GetIO().DeltaTime);
+			ImGui::TextColored(ImVec4(1, 1, 0, 1), "Framerate: %.2f", ImGui::GetIO().Framerate);
+		}
+
+		if (show_col_editor)
+		{
+			ImGui::Begin("Color Editor");
+			az::app->window_style.ColorEditor();
+			ImGui::End();
+		}
+		ImGui::End();
+
+	}
 };
 
-
-class ContentBrowser : public az::Widget
+class MyApplication :public az::Application
 {
-	std::string m_folder_path;
-	std::unique_ptr<az::Image> img;
 public:
-	ContentBrowser(const std::string& folder_path)
-		:m_folder_path(folder_path)
+	MyApplication()
 	{
-	}
-	void OnConstruction()
-	{
+		az::WindowStyle style;
+		style.size = az::GetMonitorResolution() - 500;
+		//style.monitor = glfwGetPrimaryMonitor(); //Fullscreen
+		style.title = "Appazoid Application";
+		style.stylecolor = az::StyleColor::StyleColorDark;
 
-		img = std::make_unique<az::Image>("D:/Files/logo.jpg");
+		//Enable Flags
+		AddConfigFlagCallback([](ImGuiIO& io)
+			{
+				az::EnableConfigFlag(io, ImGuiConfigFlags_DockingEnable);
+				az::EnableConfigFlag(io, ImGuiConfigFlags_NavEnableKeyboard);
+				//az::EnableConfigFlag(io,ImGuiConfigFlags_ViewportsEnable);//Errors when using viewports
+			});
+		//Menu Callback
+		
+		AddMenubarCallback(AZ_BIND_CALLBACK_FN(MenubarCallback));
+		AddLayer<MainLayer>("main_layer");
+		az::AppazoidSpecification::Print();
+		az::MemoryTracker::Print();
+		Create(style);
 	}
-	~ContentBrowser()
+	void MenubarCallback()
 	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Exit"))this->Close();
+			ImGui::EndMenu();
+		}
 	}
-
-	void OnRender() override
-	{
-		ImGui::Begin(m_folder_path.c_str());
-		//for()
-		ImGui::Button("TODO: make a content browser.");
-
-		static int sz[2] = { img->GetWidth(),img->GetHeight() };
-		ImGui::SliderInt2("size:", sz, 24, 1024);
-		ImGui::Image((void*)(img->GetTextureID()), { (float)sz[0],(float)sz[1] });
-		ImGui::End();
-	}
-	void OnImGuiRender() override
-	{
-	}
-private:
-
 };
-
-
-
-void ConfigFlags(ImGuiIO& io)
-{
-	az::EnableConfigFlag(io, ImGuiConfigFlags_DockingEnable);
-	az::EnableConfigFlag(io, ImGuiConfigFlags_NavEnableKeyboard);
-	//az::EnableConfigFlag(io,ImGuiConfigFlags_ViewportsEnable);
-}
 
 
 az::Application* az::CreateApplication(int argc, char** argv)
 {
-
-	az::WindowStyle style;
-	style.size = GetMonitorResolution();
-	style.monitor = glfwGetPrimaryMonitor();
-	style.title = "Appazoid Application";
-	style.stylecolor = az::StyleColor::CustomStyleColors;
-	Application* app = new Application(style);
-	app->AddConfigFlagCallback(ConfigFlags);
-	app->AddMenubarCallback([app]()
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				if (ImGui::MenuItem("Exit"))app->Close();
-				ImGui::EndMenu();
-			}
-		}
-	);
-	app->AddWidget<MainWidget>("first_widget", "my window");
-	app->AddWidget<MainWidget>("second_widget", "not my window");
-	app->AddWidget<ContentBrowser>("content_browser","D:/Files/");
-	//app->AddWidget<MFrameBuffer>("framebuffer_widget", "FrameBuffer");//TODO: Fix The Errors
-	az::AppazoidSpecification::Print();
-	az::MemoryTracker::Print();
-	for (auto& i : app->GetWidgetList())
-	{
-		std::cout << i.first << " ";
-	}
-	std::cout << std::endl;
-	//app->HideWidget("first_widget");
-	//std::shared_ptr<MainWidget> w2 = std::make_shared<MainWidget>();
-	//app->AddWidget(w2);
-	return app;
+	return new MyApplication();
 }
-//TODO: Test all functions

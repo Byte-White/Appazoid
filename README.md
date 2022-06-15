@@ -4,11 +4,12 @@ C++ GUI Framework
 ######
 ## How to use:
 
-### How to add repository:
+### How to add the repository:
 ```
 git clone --recursive https://github.com/FunhuninjaStudio/Appazoid
 ```
-### CMake stuff:
+If the repository was cloned non-recursively previously, use `git submodule update --init` to clone the necessary submodules.
+### CMake:
 ```CMAKE
 add_subdirectory(Appazoid)
 target_link_libraries(${PROJECT_NAME} appazoid::appazoid)
@@ -19,51 +20,108 @@ target_link_libraries(${PROJECT_NAME} appazoid::appazoid)
 ```C++
 #include "Appazoid/Appazoid.h"
 
-class MainWidget : public az::Widget // Create A Widget SubClass
+
+class MainLayer : public az::Layer
 {
-	std::string name;
+
 public:
-	MainWidget(const std::string& name)
-		:name(name)
+	MainLayer()
 	{
 
 	}
 
-	void OnRender() override
+	void OnConstruction() override
 	{
-		ImGui::Begin(name.c_str());
-		ImGui::Text("Appazoid Test Project");
+
+	}
+
+	void OnEvent(az::Event& e) override
+	{
+		az::EventDispatcher dispatcher(e);
+		dispatcher.Dispatch<az::KeyReleasedEvent>(AZ_BIND_EVENT_FN(OnKeyReleased));
+	}
+
+	bool OnKeyReleased(az::KeyReleasedEvent& e)
+	{
+		if (e.GetKeyCode() == az::Key::Escape)
+		{
+			//... do something ...
+			APPAZOID_DEBUG("\'ESC\' Got Released");
+		}
+		return false;
+	}
+
+	void OnUIRender() override
+	{
+		ImGui::Begin("Main Window");
+		ImGui::Text("Hello World!");
+		ImGui::Button("Hi There!");
 		ImGui::End();
-	}
-private:
 
+		//Status 
+		static bool show_info = true;
+		static bool show_col_editor = false;
+
+		ImGui::Begin("Status");
+		ImGui::Checkbox("show info", &show_info);
+		ImGui::SameLine();
+		ImGui::Checkbox("show color editor", &show_col_editor);
+		if (show_info)
+		{
+			ImGui::Text("Delta Time: %f", ImGui::GetIO().DeltaTime);
+			ImGui::TextColored(ImVec4(1, 1, 0, 1), "Framerate: %.2f", ImGui::GetIO().Framerate);
+		}
+
+		if (show_col_editor)
+		{
+			ImGui::Begin("Color Editor");
+			az::app->window_style.ColorEditor();
+			ImGui::End();
+		}
+		ImGui::End();
+
+	}
 };
+
+class MyApplication :public az::Application
+{
+public:
+	MyApplication()
+	{
+		az::WindowStyle style;
+		style.size = az::GetMonitorResolution() - 500;
+		//style.monitor = glfwGetPrimaryMonitor(); //Fullscreen
+		style.title = "Appazoid Application";
+		style.stylecolor = az::StyleColor::StyleColorDark;
+
+		//Enable Flags
+		AddConfigFlagCallback([](ImGuiIO& io)
+			{
+				az::EnableConfigFlag(io, ImGuiConfigFlags_DockingEnable);
+				az::EnableConfigFlag(io, ImGuiConfigFlags_NavEnableKeyboard);
+				//az::EnableConfigFlag(io,ImGuiConfigFlags_ViewportsEnable);//Errors when using viewports
+			});
+		//Menu Callback
+		
+		AddMenubarCallback(AZ_BIND_CALLBACK_FN(MenubarCallback));
+		AddLayer<MainLayer>("main_layer");
+		az::AppazoidSpecification::Print();
+		az::MemoryTracker::Print();
+		Create(style);
+	}
+	void MenubarCallback()
+	{
+		if (ImGui::BeginMenu("File"))
+		{
+			if (ImGui::MenuItem("Exit"))this->Close();
+			ImGui::EndMenu();
+		}
+	}
+};
+
 
 az::Application* az::CreateApplication(int argc, char** argv)
 {
-	Application::WindowStyle style; // Create A Window Style
-	style.width = 800;
-	style.height = 400;
-	style.title = "Appazoid Application";
-	style.stylecolor = az::StyleColor::StyleColorDark;
-	Application* app = new Application(style); // Create a window
-	app->AddMenubarCallback([app]() // Create a menu
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				if (ImGui::MenuItem("Exit"))app->Close();
-				ImGui::EndMenu();
-			}
-		}
-	);
-	app->AddWidget<MainWidget>("first_widget", "my window"); // Add a widget
-	app->AddWidget<MainWidget>("second_widget", "not my window"); // Add a widget
-
-  // Print all widgets
-	for (auto& i : app->GetWidgetList())
-	{
-		std::cout << i.first << " ";
-	}
-	return app;
+	return new MyApplication();
 }
 ```
