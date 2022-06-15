@@ -12,7 +12,7 @@ namespace az
 		unsigned char* m_LocalBuffer;
 	public:
 		Image(const std::string& path,ImageFormat format = ImageFormat::RGBA)
-			:m_FilePath(path), m_LocalBuffer(nullptr), Texture(format)
+			:m_FilePath(path), m_LocalBuffer(nullptr), Texture(0,0,format)
 		{
 			//Texture's Constructor will get called.
 			//stbi_set_flip_vertically_on_load(1);

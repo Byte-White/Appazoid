@@ -36,8 +36,8 @@ namespace az
 		ImageFormat m_format;
 		//inline virtual bool CreateTextureInConstructor() { return true; }//override it to return false to disable the CreateTexture() in the constructor //not needed right now(used it for tests)
 	public:
-		Texture(const ImageFormat& format = ImageFormat::None);
-		Texture(unsigned char* buffer);
+		Texture(uint32_t width = 0, uint32_t height = 0, const ImageFormat& format = ImageFormat::None);
+		Texture(unsigned char* buffer, uint32_t width = 0, uint32_t height = 0);
 		virtual ~Texture();
 		void CreateTexture();
 		inline void DeleteTexture() { glDeleteTextures(1, &m_RendererID); }
@@ -50,6 +50,7 @@ namespace az
 		{
 			glBindTexture(GL_TEXTURE_2D, 0);
 		}
+		void SetData(void* data, uint32_t size);
 
 		inline GLuint GetTextureID() const { return m_RendererID; }
 

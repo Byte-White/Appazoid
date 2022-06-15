@@ -9,7 +9,10 @@
 
 
 #define BIT(n) (1<<n)
-#define AZ_BIND_EVENT_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
+
+#define AZ_BIND_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
+#define AZ_BIND_EVENT_FN(fn) AZ_BIND_FN(fn)
+#define AZ_BIND_CALLBACK_FN(fn) AZ_BIND_FN(fn)
 
 namespace az
 {

@@ -2,14 +2,14 @@
 #include "Logging/Log.h"
 namespace az 
 {
-	Texture::Texture(const ImageFormat& format)
-		:m_RendererID(0), m_Height(0), m_Width(0), m_BPP(0),m_format(format)
+	Texture::Texture(uint32_t width, uint32_t height, const ImageFormat& format)
+		:m_RendererID(0), m_Height(height), m_Width(width), m_BPP(0),m_format(format)
 	{
 		//if(CreateTextureInConstructor())
 		CreateTexture();
 	}
-	Texture::Texture(unsigned char* buffer)
-		: m_RendererID(0), m_Height(0), m_Width(0), m_BPP(0)
+	Texture::Texture(unsigned char* buffer, uint32_t width, uint32_t height)
+		: m_RendererID(0), m_Height(height), m_Width(width), m_BPP(0)
 	{
 		CreateTexture();
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_Width, m_Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
@@ -30,4 +30,16 @@ namespace az
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
+	void Texture::SetData(void* data, uint32_t size)
+	{
+		uint32_t bpp = m_format == ImageFormat::RGBA ? 4 : 3;
+		//ASSERT(size == m_Width * m_Height * bpp, "Data must be an entire texture!");
+		if (size != m_Width * m_Height * bpp)
+		{
+			APPAZOID_ERROR("Data must be an entire texture!");
+			throw "Data must be an entire texture!";
+		}
+
+		glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, ImageFormatToOpenGL(m_format), GL_UNSIGNED_BYTE, data);
+	}
 }

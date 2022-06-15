@@ -13,12 +13,44 @@
 
 namespace az 
 {
+    namespace entrypoint
+    {
+        GLFWwindow* window;
+        Application* app;
+        ImGuiIO* io;
+    }
     using az::entrypoint::io;
 
     Application::Application(WindowStyle& style) 
-        :window_style(style), done(false)
+        :window_style(style)
     {
-        //Todo: premesti create_window tuk i mahni oniq shibani funkcii
+        Create(style);
+    }
+
+    void Application::Create(WindowStyle& style)
+    {
+        // Create a window with WindowHandler
+        window_handler = az::make_scope<WindowHandler>(style);
+
+        entrypoint::window = window_handler->GetGLFWWindow();
+        // Error check if the window fails to create
+        if (entrypoint::window == NULL)
+        {
+            APPAZOID_CORE_CRITICAL("Failed to create a window!");
+            glfwTerminate();
+            throw "Failed to create a window!";
+        }
+        // Introduce the window into the current context
+        glfwMakeContextCurrent(entrypoint::window);
+        entrypoint::init_glad();
+        // Specify the viewport of OpenGL in the Window
+        // In this case the viewport goes from x = 0, y = 0, to x = width, y = height
+        glViewport(0, 0, style.width, style.height);
+        az::Input::SetWindow(window_handler->GetGLFWWindow());//Selects Window
+        done = false;
+
+        //Event Callback Function
+        window_handler->SetEventCallback(AZ_BIND_EVENT_FN(OnEvent));
     }
 
     Application::~Application()
@@ -44,14 +76,9 @@ namespace az
 				layer.second->OnUIRender();
 		}
 	}
-    static bool event_callbacks_set = false;
+
     void Application::Run()
     {
-        if (!event_callbacks_set)
-        {
-            window_handler->SetEventCallback(AZ_BIND_EVENT_FN(Application::OnEvent));
-            event_callbacks_set = true;
-        }
         this->Clear();
         this->NewFrame();
         this->BeginDockspace();
@@ -91,8 +118,8 @@ namespace az
     {
         //APPAZOID_CORE_WARN("ON EVENT");
         EventDispatcher dispatcher(e);
-        dispatcher.Dispatch<WindowCloseEvent>(AZ_BIND_EVENT_FN(Application::OnWindowClose));
-        dispatcher.Dispatch<WindowResizeEvent>(AZ_BIND_EVENT_FN(Application::OnWindowResize));
+        dispatcher.Dispatch<WindowCloseEvent>(AZ_BIND_EVENT_FN(OnWindowClose));
+        dispatcher.Dispatch<WindowResizeEvent>(AZ_BIND_EVENT_FN(OnWindowResize));
 
         for (auto it = m_layerstack.rbegin(); it != m_layerstack.rend(); ++it)
         {
@@ -217,156 +244,5 @@ namespace az
         auto it = m_layerstack.find(layer_name);
         if (it != m_layerstack.end())
             it->second->visible = true;
-    }
-    
-	//-----------------ENTRY POINT-----------------------
-
-
-    namespace entrypoint
-    {
-
-        GLFWwindow* window;
-        Application* app;
-        ImGuiIO* io;
-
-        void init_glfw()
-        {
-            // Initialize GLFW
-            glfwInit();
-
-            // Tell GLFW what version of OpenGL we are using 
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            // Tell GLFW to enable DEBUG OUTPUT
-            //glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
-            // Tell GLFW we are using the CORE profile
-            // So that means we only have the modern functions
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        }
-        //Error Message Callback
-        void GLAPIENTRY
-            MessageCallback(GLenum source,
-                GLenum type,
-                GLuint id,
-                GLenum severity,
-                GLsizei length,
-                const GLchar* message,
-                const void* userParam)
-        {
-            APPAZOID_CORE_ERROR("GL CALLBACK: {0} type = {1}, severity = {2}, message = {3}", 
-                (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-                type, severity, message);
-            //fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-            //    (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-            //    type, severity, message);
-        }
-
-        void init_glad()
-        {
-            APPAZOID_CORE_INFO("(GLAD)Loading OpenGL...");
-            //Load GLAD so it configures OpenGL
-            gladLoadGL();
-            //Enable OpenGL Error Message Callback
-            glEnable(GL_DEBUG_OUTPUT);
-            glDebugMessageCallback(MessageCallback, nullptr);
-        }
-
-
-
-        int create_window()
-        {
-            // Create a window with WindowHandler
-            app->window_handler = az::make_scope<WindowHandler>(app->window_style);
-            window = app->window_handler->GetGLFWWindow();
-            // Error check if the window fails to create
-            if (window == NULL)
-            {
-                APPAZOID_CORE_ERROR("Failed to create GLFW window");
-                //std::cout << "Failed to create GLFW window" << std::endl;
-                glfwTerminate();
-                return -1;
-            }
-            // Introduce the window into the current context
-            glfwMakeContextCurrent(window);
-            init_glad();
-            // Specify the viewport of OpenGL in the Window
-            // In this case the viewport goes from x = 0, y = 0, to x = width, y = height
-            glViewport(0, 0, app->window_style.width, app->window_style.height);
-            az::Input::SetWindow(az::entrypoint::app->window_handler->GetGLFWWindow());//Selects Window
-
-            return 0;
-        }
-        void init_imgui()
-        {
-            io = &ImGui::GetIO(); (void)io;
-
-            //ImGui Flags (Enabled By Default)
-            //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-            //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows ///Has Problems With OpenGl3
-            
-            io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-            io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-            
-            if(app->m_ConfigFlagsCallback!=nullptr)
-            app->m_ConfigFlagsCallback(*io);// Set IMGUI FLAGS
-
-            ImGui_ImplGlfw_InitForOpenGL(window, true);
-            ImGui_ImplOpenGL3_Init("#version 330");
-
-            switch (app->window_style.stylecolor)
-            {
-            case az::StyleColor::StyleColorDark:
-                ImGui::StyleColorsDark();
-                break;
-            case az::StyleColor::StyleColorLight:
-                ImGui::StyleColorsLight();
-                break;
-            case az::StyleColor::StyleColorClassic:
-                ImGui::StyleColorsClassic();
-                break;
-            //case az::StyleColor::CustomStyleColors:
-                //SetColorsTheme(app);
-            //    break;
-            }
-        }
-        void Main(int argc, char** argv)
-        {
-            //OnConstruction function for all layers
-            for (auto widget : app->GetLayerStack())
-            {
-                widget.second->OnConstruction();
-            }
-            //random shit for FrameBufferTesting
-            // GLuint fbo;
-            // Texture* texture;
-            // 
-            // Main while loop
-
-            while (!glfwWindowShouldClose(window) && (!app->done))
-            {
-                app->Run();
-            }
-        }
-        void cleanup()
-        {
-            // Calls the "Destructor"(Before Cleaning up)
-            for (auto widget : app->GetLayerStack())
-            {
-                widget.second->OnDestruction();
-            }
-            // Deletes all ImGUI instances
-            ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-            ImGui::DestroyContext();
-
-            // Delete window before ending the program
-            app->window_handler->DestroyWindow();
-            // Terminate GLFW before ending the program
-            glfwTerminate();
-
-
-            delete app;//free the allocated memory
-        }
     }
 }

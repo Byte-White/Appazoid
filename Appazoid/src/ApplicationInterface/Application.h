@@ -43,6 +43,7 @@
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 
+
 namespace az {
 
 	//Config Helper Functions
@@ -92,7 +93,9 @@ namespace az {
 		WindowStyle window_style;
 		az::Scope<WindowHandler> window_handler;
 	public:
-		Application(WindowStyle& style = WindowStyle(255, 255, "Appazoid Application"));
+		Application(WindowStyle& style /*= WindowStyle(255, 255, "Appazoid Application") */);
+		Application() {}
+		void Create(WindowStyle& style);
 		virtual ~Application();
 		virtual void RenderUI();
 		//main application loop

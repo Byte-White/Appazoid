@@ -14,6 +14,7 @@ ${PROJECT_NAME}
   #Application
   "src/ApplicationInterface/Application.cpp"
   "src/ApplicationInterface/Application.h"
+  "src/ApplicationInterface/ApplicationEntrypoint.cpp"
   #ENTRY POINT
   "src/Core/EntryPoint.h"
   #Logging
@@ -48,7 +49,7 @@ ${PROJECT_NAME}
  #UI
  "src/GUI/Gui.h" 
  "src/GUI/Gui.cpp" 
- "src/ImGuiBuild/imguibuild.cpp"
+ "src/GUI/ImGuiBuild/imguibuild.cpp"
  #Event System
  "src/Events/Event.h" 
  "src/Events/ApplicationEvent.h"
