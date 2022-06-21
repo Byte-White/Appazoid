@@ -77,10 +77,16 @@ namespace az
 		}
 	}
 
+    void Application::EventPolling()
+    {
+        //APPAZOID_CORE_DEBUG("GLFW POLL EVENTS");
+        glfwPollEvents();
+    }
+
     void Application::Run()
     {
-        this->Clear();
         this->NewFrame();
+        this->Clear();
         this->BeginDockspace();
         //Entry Point
         this->RenderUI();
@@ -101,8 +107,7 @@ namespace az
         {
             layer.second->OnBufferSwap();
         }
-        // Take care of all GLFW events
-        glfwPollEvents();
+
         // Update and Render additional Platform Windows
         // Only when Multi-Viewports are enabled
         if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -112,6 +117,13 @@ namespace az
             ImGui::RenderPlatformWindowsDefault();
             glfwMakeContextCurrent(backup_current_context);
         }
+        
+    }
+
+    void Application::OnStart()
+    {
+        app->rendering_thread = az::make_scope<std::thread>(AZ_BIND_FN(Application::EventPolling));
+        //app->event_polling_thread = az::make_scope<std::thread>(AZ_BIND_FN(EventPolling));
     }
 
     void Application::OnEvent(Event& e)

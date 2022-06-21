@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <memory>
 #include <functional>
+#include <future>
 
 #include "Core/Base.h"
 #include "Core/AppazoidSpecification.h"
@@ -98,8 +99,10 @@ namespace az {
 		void Create(WindowStyle& style);
 		virtual ~Application();
 		virtual void RenderUI();
+		virtual void EventPolling();
 		//main application loop
 		virtual void Run();
+		virtual void OnStart();
 		void OnEvent(Event& e);
 		bool OnWindowClose(WindowCloseEvent& e);
 		bool OnWindowResize(WindowResizeEvent& e);
@@ -141,9 +144,12 @@ namespace az {
 		void ShowLayer(std::string layer_name);
 		//std::vector<std::string> GetLayersNames();
 		friend void entrypoint::init_imgui();//allows imgui initialization to use callback functions
+		friend void entrypoint::Main(int argc, char** argv);
 	private:
 		std::function<void()> m_MenubarCallback;//menubar callback function pointer
 		std::function<void(ImGuiIO&)> m_ConfigFlagsCallback;// Configure Flags callback
+		//Scope<std::thread> event_polling_thread;
+		Scope<std::thread> rendering_thread;
 
 		LayerStack m_layerstack;
 	};

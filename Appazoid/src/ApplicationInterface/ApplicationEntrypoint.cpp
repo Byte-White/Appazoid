@@ -101,6 +101,8 @@ namespace az
         }
         void Main(int argc, char** argv)
         {
+            // Take care of all events polling
+            //app->EventPolling();
             //OnConstruction function for all layers
             for (auto widget : app->GetLayerStack())
             {
@@ -112,10 +114,19 @@ namespace az
             // 
             // Main while loop
 
-            while (!glfwWindowShouldClose(window) && (!app->done))
+            //app->EventPolling();
+
+            //std::thread t();
+            //auto eventhandler = std::async(&Application::EventPolling,entrypoint::app);
+            while (!app->done)
             {
                 app->Run();
+                app->EventPolling();
             }
+            app->done = true;
+            //t.join();
+            //app->rendering_thread->join();
+            //app->event_polling_thread->join();
         }
         void cleanup()
         {
