@@ -9,6 +9,7 @@ ${PROJECT_NAME}
   STATIC
   #Core
   "src/Core/MemoryTracker.h" 
+  "src/Core/MemoryTracker.cpp"
   "src/Core/Base.h"
 
   #Application

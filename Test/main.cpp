@@ -33,7 +33,7 @@ public:
 	}
 
 	bool OnKeyReleased(az::KeyReleasedEvent& e)
-	{
+	{	
 		if (e.GetKeyCode() == az::Key::Escape)
 		{
 			//... do something ...

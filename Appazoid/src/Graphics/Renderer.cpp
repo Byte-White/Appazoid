@@ -33,7 +33,8 @@ namespace az
 	}
 
 	void Renderer::Clear() const {
-		GLCall(glClear(GL_COLOR_BUFFER_BIT));
+		//GLCall(glClear(GL_COLOR_BUFFER_BIT));
+		glClear(GL_COLOR_BUFFER_BIT);
 
 	}
 }
