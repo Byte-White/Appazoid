@@ -1,5 +1,6 @@
 #include "Application.h"
 //-----------------ENTRY POINT-----------------------
+#include "Core/EntryPoint.h"
 
 namespace az
 {
