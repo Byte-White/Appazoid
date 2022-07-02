@@ -68,22 +68,7 @@ namespace az
             static bool init_imgui = false;
             if (init_imgui) return;
             init_imgui = true;
-
-            io = &ImGui::GetIO(); (void)io;
-
-            //ImGui Flags (Enabled By Default)
-            //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-            //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows ///Has Problems With OpenGl3
-
-            io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-            io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-
-            if (app->m_ConfigFlagsCallback != nullptr)
-                app->m_ConfigFlagsCallback(*io);// Set IMGUI FLAGS
-
-            ImGui_ImplGlfw_InitForOpenGL(window, true);
-            ImGui_ImplOpenGL3_Init("#version 330");
-
+            
             switch (app->window_style.stylecolor)
             {
             case az::StyleColor::StyleColorDark:
@@ -136,10 +121,6 @@ namespace az
             {
                 widget.second->OnDestruction();
             }
-            // Deletes all ImGUI instances
-            ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-            ImGui::DestroyContext();
 
             // Delete window before ending the program
             app->window_handler->DestroyWindow();

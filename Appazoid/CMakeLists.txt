@@ -63,7 +63,7 @@ ${PROJECT_NAME}
  #LayerStack
  "src/Core/LayerStack.h" 
  "src/Core/LayerStack.cpp" 
-)
+ "src/GUI/ImGuiLayer.h" "src/GUI/ImGuiLayer.cpp")
 
 #Appazoid Add Include Directories
 target_include_directories( 

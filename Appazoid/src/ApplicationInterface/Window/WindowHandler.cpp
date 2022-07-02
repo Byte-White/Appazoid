@@ -190,6 +190,7 @@ namespace az
 	void WindowHandler::Init()
 	{
 		glfwSetWindowUserPointer(m_Window, &this->style);
+		glfwMakeContextCurrent(m_Window);
 		SetVSync(true);
 		SetGLFWCallbacks();
 	}
@@ -214,6 +215,7 @@ namespace az
 
 	void WindowHandler::SetVSync(bool enabled)
 	{
+		Log::CoreInfo(enabled ? "VSync enabled" : "VSync disabled");
 		if (enabled)
 			glfwSwapInterval(1);
 		else
