@@ -8,7 +8,6 @@
 #include <future>
 
 #include "Core/Base.h"
-#define AZ_RENDER_API 1
 #include "Core/AppazoidSpecification.h"
 
 #include "Appazoid/UI/Layer.h"
@@ -17,19 +16,26 @@
 #ifndef AZ_IMGUI_BACKENDS
 
 #define AZ_IMGUI_BACKENDS
+
+#include "backends/imgui_impl_glfw.h"
+
 #if AZ_RENDER_API == AZ_RENDER_API_OPENGL//(az::RenderAPI::API::OpenGL)
 #include "backends/imgui_impl_opengl3.h"
 #elif AZ_RENDER_API == AZ_RENDER_API_VULKAN//az::RenderAPI::API::Vulkan
+#define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_VULKAN
 #include "backends/imgui_impl_vulkan.h"
 #else
 #error "No Render API Selected"
 #endif
-#include "backends/imgui_impl_glfw.h"
+
 #endif
 #if AZ_RENDER_API == AZ_RENDER_API_OPENGL
 #include <glad/glad.h>
 #endif
+
 #include <GLFW/glfw3.h> 
+#include "API/Vulkan/Vulkan.h"
 #include "GUI/ImGuiLayer.h"
 
 #include "Appazoid/UI/Image.h"
@@ -55,7 +61,6 @@
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 #include "Core/MemoryTracker.h"
-
 
 namespace az {
 
@@ -85,7 +90,7 @@ namespace az {
 		extern ImGuiIO* io;
 
 		void init_glfw();
-		void init_glad();
+		void init_render_api();
 		void init_imgui();
 		void Main(int argc, char** argv);
 		void cleanup();

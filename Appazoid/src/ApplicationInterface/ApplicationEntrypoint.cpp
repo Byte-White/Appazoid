@@ -49,17 +49,33 @@ namespace az
             //    type, severity, message);
         }
 
-        void init_glad()
+        void init_render_api()
         {
-            static bool init_glad = false;
-            if (init_glad) return;
-            init_glad = true;
+            static bool init_render_api = false;
+            if (init_render_api) return;
+            init_render_api = true;
+
+            #if AZ_RENDER_API == AZ_RENDER_API_OPENGL
             APPAZOID_CORE_INFO("(GLAD)Loading OpenGL...");
             //Load GLAD so it configures OpenGL
             gladLoadGL();
             //Enable OpenGL Error Message Callback
             glEnable(GL_DEBUG_OUTPUT);
             glDebugMessageCallback(MessageCallback, nullptr);
+            #elif AZ_RENDER_API == AZ_RENDER_API_VULKAN
+            APPAZOID_CORE_INFO("Initializing Vulkan...");
+            if (!glfwVulkanSupported())
+            {
+                APPAZOID_CORE_ERROR("GLFW: Vulkan not supported!\n");
+                return;
+            }
+
+            uint32_t extensions_count = 0;
+            const char** extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
+            Vulkan::SetupVulkan(extensions, extensions_count);
+
+            
+            #endif
         }
 
 
@@ -125,6 +141,27 @@ namespace az
             // Delete window before ending the program
             app->window_handler->DestroyWindow();
             // Terminate GLFW before ending the program
+            #if AZ_RENDER_API == AZ_RENDER_API_VULKAN
+
+            // Cleanup
+            VkResult err = vkDeviceWaitIdle(Vulkan::g_Device);
+            check_vk_result(err);
+
+            // Free resources in queue
+            for (auto& queue : Vulkan::s_ResourceFreeQueue)
+            {
+                for (auto& func : queue)
+                    func();
+            }
+            Vulkan::s_ResourceFreeQueue.clear();
+
+            ImGui_ImplVulkan_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
+
+            Vulkan::CleanupVulkanWindow();
+            Vulkan::CleanupVulkan();
+            #endif
             glfwTerminate();
 
 

@@ -63,7 +63,11 @@ ${PROJECT_NAME}
  #LayerStack
  "src/Core/LayerStack.h" 
  "src/Core/LayerStack.cpp" 
- "src/GUI/ImGuiLayer.h" "src/GUI/ImGuiLayer.cpp")
+ "src/GUI/ImGuiLayer.h" 
+ "src/GUI/ImGuiLayer.cpp" 
+ #API
+ "src/API/Vulkan/Vulkan.cpp"
+)
 
 #Appazoid Add Include Directories
 target_include_directories( 
@@ -74,11 +78,18 @@ target_include_directories(
     #${PROJECT_SOURCE_DIR}/vendor/glfw/include
     ${PROJECT_SOURCE_DIR}/vendor/glm # glm is a head-only library so it doesn't need to get linked
     ${PROJECT_SOURCE_DIR}/vendor/spdlog/include
+    $ENV{VULKAN_SDK}/include
 )
-
+target_link_directories(
+    ${PROJECT_NAME}
+    PUBLIC
+    $ENV{VULKAN_SDK}/lib
+)
 
 target_link_libraries(
     ${PROJECT_NAME}
+    PUBLIC
+    vulkan-1.lib
     PUBLIC
     imgui::imgui
     PUBLIC

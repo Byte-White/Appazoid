@@ -1,5 +1,7 @@
 #include "ImGuiLayer.h"
 #include "ApplicationInterface/Application.h"
+#include "API/Vulkan/Vulkan.h"
+#include "API/Vulkan/Vulkan.cpp"
 namespace az
 {
 	void ImGuiLayer::OnConstruction()
@@ -31,12 +33,50 @@ namespace az
 		
 		// Setup Platform/Renderer bindings
 		ImGui_ImplGlfw_InitForOpenGL(Application::Get()->GetWindow()->GetGLFWWindow(), true);
+		#if AZ_RENDER_API == AZ_RENDER_API_OPENGL
 		ImGui_ImplOpenGL3_Init("#version 410");
+		#elif AZ_RENDER_API == AZ_RENDER_API_VULKAN
+		// Create Framebuffers
+		int w, h;
+		// Create Window Surface
+		VkSurfaceKHR surface;
+		VkResult err = glfwCreateWindowSurface(Vulkan::g_Instance, Application::Get()->window_handler->GetGLFWWindow(), Vulkan::g_Allocator, &surface);
+		check_vk_result(err);
+
+		glfwGetFramebufferSize(Application::Get()->window_handler->GetGLFWWindow(), &w, &h);
+		ImGui_ImplVulkanH_Window* wd = &Vulkan::g_MainWindowData;
+		az::Vulkan::SetupVulkanWindow(wd, surface, w, h);
+
+		Vulkan::s_AllocatedCommandBuffers.resize(wd->ImageCount);
+		Vulkan::s_ResourceFreeQueue.resize(wd->ImageCount);
+
+		// Setup Platform/Renderer backends
+		ImGui_ImplGlfw_InitForVulkan(Application::Get()->window_handler->GetGLFWWindow(), true);
+		ImGui_ImplVulkan_InitInfo init_info = {};
+		init_info.Instance = Vulkan::g_Instance;
+		init_info.PhysicalDevice = Vulkan::g_PhysicalDevice;
+		init_info.Device = Vulkan::g_Device;
+		init_info.QueueFamily = Vulkan::g_QueueFamily;
+		init_info.Queue = Vulkan::g_Queue;
+		init_info.PipelineCache = Vulkan::g_PipelineCache;
+		init_info.DescriptorPool = Vulkan::g_DescriptorPool;
+		init_info.Subpass = 0;
+		init_info.MinImageCount = Vulkan::g_MinImageCount;
+		init_info.ImageCount = wd->ImageCount;
+		init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+		init_info.Allocator = Vulkan::g_Allocator;
+		init_info.CheckVkResultFn = check_vk_result;
+		ImGui_ImplVulkan_Init(&init_info, wd->RenderPass);
+		#endif
 	}
 
 	void ImGuiLayer::OnDestruction()
 	{
+		#if AZ_RENDER_API == AZ_RENDER_API_OPENGL
 		ImGui_ImplOpenGL3_Shutdown();
+		#elif AZ_RENDER_API == AZ_RENDER_API_VULKAN
+		ImGui_ImplVulkan_Shutdown();
+		#endif
 		ImGui_ImplGlfw_Shutdown();
 		ImGui::DestroyContext();
 	}
@@ -53,8 +93,11 @@ namespace az
 	
 	void ImGuiLayer::Begin()
 	{
-
+		#if AZ_RENDER_API == AZ_RENDER_API_OPENGL
 		ImGui_ImplOpenGL3_NewFrame();
+		#elif AZ_RENDER_API == AZ_RENDER_API_VULKAN
+		ImGui_ImplVulkan_NewFrame();
+		#endif
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 	}
@@ -68,8 +111,11 @@ namespace az
 
 		// Rendering
 		ImGui::Render();
+		#if AZ_RENDER_API == AZ_RENDER_API_OPENGL
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		#elif AZ_RENDER_API == AZ_RENDER_API_VULKAN
 
+		#endif
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			GLFWwindow* backup_current_context = glfwGetCurrentContext();

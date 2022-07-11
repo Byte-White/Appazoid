@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Logging/Log.h"
+
+//#if AZ_RENDER_API == AZ_RENDER_API_OPENGL
 #include "glad/glad.h"
+//#endif 
 #include "PlatformDetection.h"
 
 
@@ -21,7 +24,7 @@ namespace az {
 	#define AZ_RENDER_API_VULKAN 2
 
 	#ifndef AZ_RENDER_API
-	#define AZ_RENDER_API AZ_RENDER_API_OPENGL//(az::RenderAPI::API::OpenGL)
+	#define AZ_RENDER_API AZ_RENDER_API_OPENGL
 	#endif
 	
 	class AppazoidSpecification

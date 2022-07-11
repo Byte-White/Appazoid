@@ -1,10 +1,17 @@
-# Appazoid
+# Appazoid [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 C++ GUI Framework
-![image](https://user-images.githubusercontent.com/51212450/166066016-54110855-11bc-4f02-9253-044e80d2c3c0.png)
-######
-## How to use:
+![C++](https://img.shields.io/badge/c++-%2300599C.svg?style=for-the-badge&logo=c%2B%2B&logoColor=white) ![OpenGL](https://img.shields.io/badge/OpenGL-%23FFFFFF.svg?style=for-the-badge&logo=opengl) 
+![vk_badge](https://user-images.githubusercontent.com/51212450/178277240-37ccc926-1444-4fff-812b-48764b33536d.png)
 
-### How to add the repository:
+# "Byte Engine" - A C++ Game Engine Made With Appazoid
+![byteengine](https://user-images.githubusercontent.com/51212450/178272164-844eea45-7513-4d7b-ab59-d9e5b2f26a1a.png)
+## How to use:
+# REQUIREMENTS:
+Build System Generator : ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?style=for-the-badge&logo=cmake&logoColor=white)
+Vulkan SDK (Optional)
+IDE: ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91.svg?style=for-the-badge&logo=visual-studio&logoColor=white) (Optional, Recommended)
+
+### Downloading the repository:
 ```
 git clone --recursive https://github.com/FunhuninjaStudio/Appazoid
 ```
@@ -14,6 +21,9 @@ If the repository was cloned non-recursively previously, use `git submodule upda
 add_subdirectory(Appazoid)
 target_link_libraries(${PROJECT_NAME} appazoid::appazoid)
 ```
+Add `add_compile_definitions(AZ_RENDER_API=AZ_RENDER_API_OPENGL)` to use
+OpenGL as render api and `add_compile_definitions(AZ_RENDER_API=AZ_RENDER_API_VULKAN)`
+for Vulkan
 ### C++ Example Code:
 
 

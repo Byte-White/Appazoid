@@ -24,10 +24,12 @@ def get_total_lines_in_directory(directory):
         # checking if it is a file
         if os.path.isfile(f):
             if (".cpp" in f) or (".h" in f): # only for C++ files
-                if "vendor" in f:
+                if "vendor" in f: #ignores this directory
+                    pass
+                elif "out" in f: #ignores this directory
                     pass
                 else:
-                    file = open(f,"r")
+                    file = open(f,"r", encoding="utf-8")
                     lines = get_lines_count(file)
                     print("file ",f," has ", lines) #prints each file's lines count individually
                     total += lines
@@ -36,7 +38,7 @@ def get_total_lines_in_directory(directory):
             get_total_lines_in_directory(f)
 
 # assign directory
-main_directory = '..\\..\\Appazoid'
+main_directory = '..\\..\\'
  
 print("SELECTED DIRECTORY: ", main_directory)
 get_total_lines_in_directory(main_directory)
