@@ -1,19 +1,13 @@
-[submodule "Appazoid/vendor/asdf/glfw"]
-	path = Appazoid/vendor/asdf/glfw
-	url = https://github.com/FunhuninjaStudio/glfw
-[submodule "Appazoid/vendor/imgui"]
-	path = Appazoid/vendor/imgui
-	url = https://github.com/FunhuninjaStudio/imgui
-	branch = docking
-[submodule "Appazoid/vendor/-b"]
-	path = Appazoid/vendor/-b
-	url = https://github.com/FunhuninjaStudio/imgui
-[submodule "Appazoid/vendor/glfw"]
-	path = Appazoid/vendor/glfw
-	url = https://github.com/FunhuninjaStudio/glfw
-[submodule "Appazoid/vendor/glm"]
-	path = Appazoid/vendor/glm
-	url = https://github.com/Groovounet/glm
-[submodule "Appazoid/vendor/spdlog"]
-	path = Appazoid/vendor/spdlog
+[submodule "vendor/glfw"]
+	path = vendor/glfw
+	url = https://github.com/Byte-White/glfw/
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "vendor/glm"]
+	path = vendor/glm
+	url = https://github.com/Groovounet/glm
+[submodule "vendor/imgui"]
+	path = vendor/imgui
+	url = https://github.com/Byte-White/imgui
+	branch = docking
