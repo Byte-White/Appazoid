@@ -15,7 +15,7 @@ IDE: ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91.svg?st
 
 ### Downloading the repository:
 ```
-git clone --recursive https://github.com/FunhuninjaStudio/Appazoid
+git clone --recursive https://github.com/Byte-White/Appazoid
 ```
 If the repository was cloned non-recursively previously, use `git submodule update --init` to clone the necessary submodules.
 ### CMake:
