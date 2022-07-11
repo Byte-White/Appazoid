@@ -8,7 +8,9 @@ C++ GUI Framework
 ## How to use:
 # REQUIREMENTS:
 Build System Generator : ![CMake](https://img.shields.io/badge/CMake-%23008FBA.svg?style=for-the-badge&logo=cmake&logoColor=white)
+
 Vulkan SDK (Optional)
+
 IDE: ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91.svg?style=for-the-badge&logo=visual-studio&logoColor=white) (Optional, Recommended)
 
 ### Downloading the repository:
