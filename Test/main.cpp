@@ -51,11 +51,14 @@ public:
 		//Status 
 		static bool show_info = true;
 		static bool show_col_editor = false;
-
+		static bool show_demo = false;
 		ImGui::Begin("Status");
 		ImGui::Checkbox("show info", &show_info);
 		ImGui::SameLine();
 		ImGui::Checkbox("show color editor", &show_col_editor);
+		ImGui::Checkbox("show demo", &show_demo);
+		if(show_demo)
+			ImGui::ShowDemoWindow(&show_demo);
 		if (show_info)
 		{
 			ImGui::Text("Delta Time: %f", ImGui::GetIO().DeltaTime);
@@ -95,8 +98,10 @@ public:
 		
 		AddMenubarCallback(AZ_BIND_CALLBACK_FN(MenubarCallback));
 		AddLayer<MainLayer>("main_layer");
+		#ifdef PRINT_INFORMATION
 		az::AppazoidSpecification::Print();
 		az::MemoryTracker::Print();
+		#endif
 		Create(style);
 	}
 	void MenubarCallback()

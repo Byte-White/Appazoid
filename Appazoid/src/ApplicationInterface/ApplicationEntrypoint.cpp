@@ -49,17 +49,33 @@ namespace az
             //    type, severity, message);
         }
 
-        void init_glad()
+        void init_render_api()
         {
-            static bool init_glad = false;
-            if (init_glad) return;
-            init_glad = true;
+            static bool init_render_api = false;
+            if (init_render_api) return;
+            init_render_api = true;
+
+            #if AZ_RENDER_API == AZ_RENDER_API_OPENGL
             APPAZOID_CORE_INFO("(GLAD)Loading OpenGL...");
             //Load GLAD so it configures OpenGL
             gladLoadGL();
             //Enable OpenGL Error Message Callback
             glEnable(GL_DEBUG_OUTPUT);
             glDebugMessageCallback(MessageCallback, nullptr);
+            #elif AZ_RENDER_API == AZ_RENDER_API_VULKAN
+            APPAZOID_CORE_INFO("Initializing Vulkan...");
+            if (!glfwVulkanSupported())
+            {
+                APPAZOID_CORE_ERROR("GLFW: Vulkan not supported!\n");
+                return;
+            }
+
+            uint32_t extensions_count = 0;
+            const char** extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
+            Vulkan::SetupVulkan(extensions, extensions_count);
+
+            
+            #endif
         }
 
 
@@ -68,22 +84,7 @@ namespace az
             static bool init_imgui = false;
             if (init_imgui) return;
             init_imgui = true;
-
-            io = &ImGui::GetIO(); (void)io;
-
-            //ImGui Flags (Enabled By Default)
-            //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-            //io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows ///Has Problems With OpenGl3
-
-            io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-            io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-
-            if (app->m_ConfigFlagsCallback != nullptr)
-                app->m_ConfigFlagsCallback(*io);// Set IMGUI FLAGS
-
-            ImGui_ImplGlfw_InitForOpenGL(window, true);
-            ImGui_ImplOpenGL3_Init("#version 330");
-
+            
             switch (app->window_style.stylecolor)
             {
             case az::StyleColor::StyleColorDark:
@@ -136,14 +137,31 @@ namespace az
             {
                 widget.second->OnDestruction();
             }
-            // Deletes all ImGUI instances
-            ImGui_ImplOpenGL3_Shutdown();
-            ImGui_ImplGlfw_Shutdown();
-            ImGui::DestroyContext();
 
             // Delete window before ending the program
             app->window_handler->DestroyWindow();
             // Terminate GLFW before ending the program
+            #if AZ_RENDER_API == AZ_RENDER_API_VULKAN
+
+            // Cleanup
+            VkResult err = vkDeviceWaitIdle(Vulkan::g_Device);
+            check_vk_result(err);
+
+            // Free resources in queue
+            for (auto& queue : Vulkan::s_ResourceFreeQueue)
+            {
+                for (auto& func : queue)
+                    func();
+            }
+            Vulkan::s_ResourceFreeQueue.clear();
+
+            ImGui_ImplVulkan_Shutdown();
+            ImGui_ImplGlfw_Shutdown();
+            ImGui::DestroyContext();
+
+            Vulkan::CleanupVulkanWindow();
+            Vulkan::CleanupVulkan();
+            #endif
             glfwTerminate();
 
 

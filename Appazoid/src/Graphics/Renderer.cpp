@@ -34,7 +34,11 @@ namespace az
 
 	void Renderer::Clear() const {
 		//GLCall(glClear(GL_COLOR_BUFFER_BIT));
+		#if AZ_RENDER_API == AZ_RENDER_API_OPENGL
 		glClear(GL_COLOR_BUFFER_BIT);
+		#elif AZ_RENDER_API == AZ_RENDER_API_VULKAN
+		
+		#endif
 
 	}
 }

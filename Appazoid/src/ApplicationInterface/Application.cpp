@@ -8,14 +8,16 @@
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
+#include "backends/imgui_impl_glfw.h"
+#include "backends/imgui_impl_vulkan.h"
 
 
 
 namespace az 
 {
+    Application* Application::s_Instance = nullptr;
     namespace entrypoint
     {
-        GLFWwindow* window;
         Application* app;
         ImGuiIO* io;
     }
@@ -29,33 +31,38 @@ namespace az
 
     void Application::Create(WindowStyle& style)
     {
+        s_Instance = this;//Selects the instance
         // Create a window with WindowHandler
         window_handler = az::make_scope<WindowHandler>(style);
 
-        entrypoint::window = window_handler->GetGLFWWindow();
         // Error check if the window fails to create
-        if (entrypoint::window == NULL)
+        if (window_handler->GetGLFWWindow() == NULL)
         {
             APPAZOID_CORE_CRITICAL("Failed to create a window!");
             glfwTerminate();
             throw "Failed to create a window!";
         }
         // Introduce the window into the current context
-        glfwMakeContextCurrent(entrypoint::window);
-        entrypoint::init_glad();
+        entrypoint::init_render_api();
         // Specify the viewport of OpenGL in the Window
         // In this case the viewport goes from x = 0, y = 0, to x = width, y = height
+
+        #if AZ_RENDER_API == AZ_RENDER_API_OPENGL
         glViewport(0, 0, style.width, style.height);
-        az::Input::SetWindow(window_handler->GetGLFWWindow());//Selects Window
+        #endif
+        az::Input::SetWindow(Application::Get()->GetWindow()->GetGLFWWindow());//Selects Window
         done = false;
 
         //Event Callback Function
         window_handler->SetEventCallback(AZ_BIND_EVENT_FN(OnEvent));
+        m_imguilayer = new ImGuiLayer;
+        m_imguilayer->OnConstruction();//Delete later
+        io = &ImGui::GetIO();
     }
 
     Application::~Application()
 	{
-
+        m_imguilayer->OnDestruction();//Delete later
 	}
 	
 	void Application::RenderUI()
@@ -81,11 +88,12 @@ namespace az
     {
         //APPAZOID_CORE_DEBUG("GLFW POLL EVENTS");
         glfwPollEvents();
+        //glfwWaitEvents();
     }
 
     void Application::Run()
     {
-        this->NewFrame();
+        m_imguilayer->Begin();
         this->Clear();
         this->BeginDockspace();
         //Entry Point
@@ -95,7 +103,7 @@ namespace az
         // Renders the ImGUI elements
         //here
         this->EndDockspace();
-        this->RenderFrame();
+        m_imguilayer->End();
 
 
         // Swap the back buffer with the front buffer
@@ -109,15 +117,7 @@ namespace az
         }
 
         // Update and Render additional Platform Windows
-        // Only when Multi-Viewports are enabled
-        if (io->ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            GLFWwindow* backup_current_context = glfwGetCurrentContext();
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(backup_current_context);
-        }
-        
+        // Only when Multi-Viewports are enabled    
     }
 
     void Application::OnStart()
@@ -167,19 +167,18 @@ namespace az
     void Application::Clear()
     {
         // Specify the color of the background
+
+        #if AZ_RENDER_API == AZ_RENDER_API_VULKAN
+        Vulkan::g_MainWindowData.ClearValue.color.float32[0] = clear_color.x * clear_color.w;
+        Vulkan::g_MainWindowData.ClearValue.color.float32[1] = clear_color.y * clear_color.w;
+        Vulkan::g_MainWindowData.ClearValue.color.float32[2] = clear_color.z * clear_color.w;
+        Vulkan::g_MainWindowData.ClearValue.color.float32[3] = clear_color.w;
+        #elif AZ_RENDER_API == AZ_RENDER_API_OPENGL
         glClearColor(this->clear_color.r, this->clear_color.g, this->clear_color.b, this->clear_color.a);
+        #endif
         // Clean the back buffer and assign the new color to it
         this->renderer.Clear();//glClear(GL_COLOR_BUFFER_BIT);
     }
-
-    void Application::NewFrame()
-    {
-        // Tell OpenGL a new frame is about to begin
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-    }
-
 
     void Application::BeginDockspace(std::string dockspace_name)
     {
@@ -232,19 +231,7 @@ namespace az
         ImGui::End();
     }
 
-    void Application::RenderFrame()
-    {
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    }
-
-    /*
-    void Application::ReloadColorTheme()
-    {
-        //entrypoint::SetColorsTheme(this);
-    }*/
-    
-	void Application::HideLayer(std::string layer_name)
+    void Application::HideLayer(std::string layer_name)
 	{
         auto it = m_layerstack.find(layer_name);
 		if(it!=m_layerstack.end())

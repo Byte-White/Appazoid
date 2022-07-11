@@ -1,8 +1,12 @@
 #pragma once
 
 #include "Logging/Log.h"
+
+//#if AZ_RENDER_API == AZ_RENDER_API_OPENGL
 #include "glad/glad.h"
+//#endif 
 #include "PlatformDetection.h"
+
 
 namespace az {
 	namespace RenderAPI
@@ -10,11 +14,18 @@ namespace az {
 		enum class API
 		{
 			None = 0,
-			OpenGL
-			//Vulkan,
+			OpenGL,
+			Vulkan
 			//DirectX
 		};
 	}
+	#define AZ_RENDER_API_NONE	 0
+	#define AZ_RENDER_API_OPENGL 1
+	#define AZ_RENDER_API_VULKAN 2
+
+	#ifndef AZ_RENDER_API
+	#define AZ_RENDER_API AZ_RENDER_API_OPENGL
+	#endif
 	
 	class AppazoidSpecification
 	{
@@ -97,7 +108,7 @@ namespace az {
 		}
 		static inline RenderAPI::API GetAPI() 
 		{
-			return RenderAPI::API::OpenGL;
+			return (RenderAPI::API)AZ_RENDER_API;
 		}
 
 	private:
@@ -125,4 +136,5 @@ namespace az {
 	//AppazoidSpecification* AppazoidSpecification::m_inst;
 	//#endif
 }
+
 //TODO: Rewrite all "Graphics/" files to use AppazoidSpecification

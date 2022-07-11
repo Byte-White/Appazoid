@@ -19,7 +19,8 @@ namespace az
 		inline WindowStyle& GetWindowStyle() { return style; }
 		void SwapBuffers();
 		void DestroyWindow();
-
+		inline int GetWidth() { return style.width; }
+		inline int GetHeight() { return style.height; }
 		void SetEventCallback(const EventCallbackFn& callback) { style.EventCallback = callback; }
 		void SetVSync(bool enabled);
 		bool IsVSync() const;
