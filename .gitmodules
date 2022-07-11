@@ -1,19 +1,13 @@
-[submodule "vendor/asdf/glfw"]
-	path = vendor/asdf/glfw
-	url = https://github.com/Byte-White/glfw
+[submodule "vendor/glfw"]
+	path = vendor/glfw
+	url = https://github.com/Byte-White/glfw/
+[submodule "vendor/spdlog"]
+	path = vendor/spdlog
+	url = https://github.com/gabime/spdlog
+[submodule "vendor/glm"]
+	path = vendor/glm
+	url = https://github.com/Groovounet/glm
 [submodule "vendor/imgui"]
 	path = vendor/imgui
 	url = https://github.com/Byte-White/imgui
 	branch = docking
-[submodule "vendor/-b"]
-	path = vendor/-b
-	url = https://github.com/Byte-White/imgui
-[submodule "vendor/glfw"]
-	path = vendor/glfw
-	url = https://github.com/Byte-White/glfw
-[submodule "vendor/glm"]
-	path = vendor/glm
-	url = https://github.com/Groovounet/glm
-[submodule "vendor/spdlog"]
-	path = vendor/spdlog
-	url = https://github.com/gabime/spdlog
