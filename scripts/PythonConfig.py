@@ -31,9 +31,11 @@ class PythonConfiguration:
     compiler = True # will be changed to False if a C++ compiler is not found
     git = False
     validated_all = False
+    has_been_run = False
 
     @classmethod
     def ValidateAll(self, min_validation:bool):
+        self.has_been_run = True
         if(min_validation):
             color_print("Starting Minimum Validation...","blue")
         else:
