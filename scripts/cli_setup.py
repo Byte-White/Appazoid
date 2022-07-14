@@ -30,8 +30,10 @@ def SetupCLI():
         #installing Typer package
             if(find_executable("pip") is not None):
                 os.system("pip install typer")
+                os.system("pip install inquirer")
+                os.system("pip install pyfiglet")
             else:
-                color_print("Could not install needed packages(typer). Could not find pip.","red")
+                color_print("Could not install needed packages(typer, inquirer, figlet). Could not find pip.","red")
         else:
             print("Could not install the CLI because git is not installed.")
     return
