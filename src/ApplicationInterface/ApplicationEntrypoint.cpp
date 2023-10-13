@@ -23,7 +23,7 @@ namespace az
 
             // Tell GLFW what version of OpenGL we are using 
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
             // Tell GLFW to enable DEBUG OUTPUT
             //glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
             // Tell GLFW we are using the CORE profile
@@ -58,7 +58,10 @@ namespace az
             #if AZ_RENDER_API == AZ_RENDER_API_OPENGL
             APPAZOID_CORE_INFO("(GLAD)Loading OpenGL...");
             //Load GLAD so it configures OpenGL
-            gladLoadGL();
+            if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+            {
+                APPAZOID_CORE_CRITICAL("(GLAD)Couldn't Load OpenGL");
+            }
             //Enable OpenGL Error Message Callback
             glEnable(GL_DEBUG_OUTPUT);
             glDebugMessageCallback(MessageCallback, nullptr);

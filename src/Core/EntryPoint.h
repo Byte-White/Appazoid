@@ -17,6 +17,7 @@ extern az::Application* az::CreateApplication(int,char**);
 int main(int argc,char** argv)
 {
     az::Log::Init();// Initialize Logging
+    az::Log::CoreInfo("Appazoid Version: {0}.{1}.{2}", APPAZOID_VERSION_MAJOR, APPAZOID_VERSION_MINOR, APPAZOID_VERSION_PATCH);
     APPAZOID_CORE_INFO("Initializing GLFW...");
     az::entrypoint::init_glfw();
 

@@ -4,15 +4,22 @@
 #include "KeyCodes.h"
 #include "MouseCodes.h"
 #include "../Logging/Log.h"
+#include "AppazoidConfig.h"
 #include <memory>
 #include <functional>
-
+#include <assert.h>
 
 #define BIT(n) (1<<n)
 
 #define AZ_BIND_FN(fn) [this](auto&&... args) -> decltype(auto) { return this->fn(std::forward<decltype(args)>(args)...); }
 #define AZ_BIND_EVENT_FN(fn) AZ_BIND_FN(fn)
 #define AZ_BIND_CALLBACK_FN(fn) AZ_BIND_FN(fn)
+
+#ifndef AZ_DISABLE_ASSERTS
+#define AZ_ASSERT(x, msg) assert(x)
+#else
+#define AZ_ASSERT(x,msg) 
+#endif
 
 namespace az
 {

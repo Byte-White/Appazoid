@@ -1,8 +1,11 @@
 ﻿# CMakeList.txt : CMake project for Appazoid, include source and define
 # project specific logic here.
 #
+cmake_minimum_required(VERSION 3.0)
 
-project(Appazoid)
+project(Appazoid VERSION 1.1.0)
+
+configure_file(AppazoidConfig.h.in AppazoidConfig.h)
 
 add_library(
 ${PROJECT_NAME}
@@ -79,6 +82,7 @@ target_include_directories(
     ${PROJECT_SOURCE_DIR}/vendor/glm # glm is a head-only library so it doesn't need to get linked
     ${PROJECT_SOURCE_DIR}/vendor/spdlog/include
     $ENV{VULKAN_SDK}/include
+    ${PROJECT_BINARY_DIR}
 )
 target_link_directories(
     ${PROJECT_NAME}

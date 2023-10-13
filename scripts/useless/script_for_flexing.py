@@ -23,7 +23,7 @@ def get_total_lines_in_directory(directory):
         global total
         # checking if it is a file
         if os.path.isfile(f):
-            if (".cpp" in f) or (".h" in f): # only for C++ files
+            if (".cpp" in f) or (".h" in f) or (".hpp" in f) or (".py" in f):
                 if "vendor" in f: #ignores this directory
                     pass
                 elif "out" in f: #ignores this directory
