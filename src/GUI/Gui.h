@@ -1,7 +1,7 @@
 #pragma
 #include "imgui.h"
 #include "glm/glm.hpp"
-#include "../../Appazoid/include/Appazoid/UI/Image.h"
+#include "../../include/Appazoid/UI/Image.h"
 #include "Core/Base.h"
 
 //Custom Gui functions +

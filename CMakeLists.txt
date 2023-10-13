@@ -113,3 +113,7 @@ target_link_libraries(
 #target_link_libraries(${PROJECT_NAME} PUBLIC glad::glad)
 add_subdirectory("vendor")
 add_library(appazoid::appazoid ALIAS ${PROJECT_NAME})
+
+if(AZ_TEST_BUILD)
+add_subdirectory(Test)
+endif()

@@ -6,7 +6,11 @@
 .vscode/
 out/
 __pycache__/
-scripts/cli/*
+scripts/cli/
+Test/
+
+#Files
+scripts/build_test.bat
 
 # Prerequisites
 *.d
